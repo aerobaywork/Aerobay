@@ -3,427 +3,762 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AEROBAY - Work Updates Portal</title>
+  <title>Aerobay - Dynamic Sky Workspace</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #0f172a;
-      color: #f8fafc;
-      min-height: 100vh;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap');
+
+    /* --- DYNAMIC GLASSMORPHISM THEME --- */
+    :root {
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --glass-bg: rgba(255, 255, 255, 0.5); 
+      --glass-border: rgba(255, 255, 255, 0.8);
+      --glass-highlight: rgba(255, 255, 255, 0.4);
+      --input-bg: rgba(255, 255, 255, 0.6);
+      --input-border: rgba(56, 189, 248, 0.4);
+      --card-bg: rgba(255, 255, 255, 0.7);
+      --card-hover: rgba(255, 255, 255, 0.9);
+      --shadow: rgba(0, 0, 0, 0.1);
+      --btn-grad-1: #0ea5e9; --btn-grad-2: #2563eb;
     }
-    #root { max-width: 620px; margin: 0 auto; padding: 24px 16px 80px; }
+
+    [data-theme="dark"] {
+      --text-main: #f8fafc;
+      --text-muted: #cbd5e1;
+      --glass-bg: rgba(15, 23, 42, 0.45); 
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --glass-highlight: rgba(255, 255, 255, 0.05);
+      --input-bg: rgba(0, 0, 0, 0.3);
+      --input-border: rgba(56, 189, 248, 0.4);
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --card-hover: rgba(255, 255, 255, 0.1);
+      --shadow: rgba(0, 0, 0, 0.5);
+      --btn-grad-1: #0284c7; --btn-grad-2: #1e40af;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; cursor: crosshair; }
     
-    .brand-header {
-      text-align: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #1e293b;
+    body {
+      background-color: #000;
+      color: var(--text-main);
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+      overflow-x: hidden; transition: color 0.5s ease;
     }
-    .brand-logo {
-      font-size: 26px;
-      font-weight: 900;
-      letter-spacing: 3px;
-      background: linear-gradient(135deg, #38bdf8, #0284c7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-transform: uppercase;
-    }
-    .brand-subtitle { font-size: 13px; color: #94a3b8; margin-top: 4px; }
 
+    /* THE CANVAS DYNAMIC SKY */
+    #canvas-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; }
+    
+    #root { width: 100%; max-width: 700px; padding: 40px 20px 100px; position: relative; z-index: 1; }
+
+    /* TIME SLIDER CONTROLS */
+    .time-controller {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: var(--glass-bg); border: 1px solid var(--glass-border);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      padding: 12px 24px; border-radius: 30px; box-shadow: 0 10px 30px var(--shadow);
+      display: flex; align-items: center; gap: 15px; z-index: 100;
+      transition: all 0.3s ease; width: 90%; max-width: 400px;
+    }
+    .time-label { font-size: 18px; font-weight: bold; color: var(--text-main); }
+    .time-slider {
+      flex: 1; -webkit-appearance: none; appearance: none;
+      height: 8px; border-radius: 4px; background: var(--input-bg);
+      outline: none; transition: 0.3s;
+    }
+    .time-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #f59e0b; cursor: pointer; box-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
+      border: 2px solid white; transition: 0.2s;
+    }
+    .time-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+    /* HEADER */
+    .brand-header { text-align: center; margin-bottom: 30px; display: flex; flex-direction: column; align-items: center; }
+    .brand-title {
+      font-size: 42px; font-weight: 900; letter-spacing: 6px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-transform: uppercase; margin-top: 10px;
+      filter: drop-shadow(0 4px 15px rgba(56, 189, 248, 0.4));
+    }
+    .brand-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 4px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+
+    /* GLASS PANELS */
     .panel {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 14px;
-      padding: 18px;
-      margin-bottom: 20px;
+      background: var(--glass-bg); 
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border); border-top: 1px solid var(--glass-highlight);
+      border-radius: 20px; padding: 28px; margin-bottom: 24px; 
+      box-shadow: 0 15px 35px var(--shadow); transition: all 0.3s ease;
     }
-
-    .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    
+    /* TABS */
+    .tabs { display: flex; gap: 12px; margin-bottom: 24px; }
     .tab {
-      flex: 1; text-align: center; padding: 9px; border-radius: 8px;
-      font-size: 13px; font-weight: 600; border: 1px solid #334155; background: #0f172a;
-      cursor: pointer; color: #94a3b8;
+      flex: 1; text-align: center; padding: 12px; border-radius: 12px;
+      font-size: 14px; font-weight: 600; background: var(--input-bg); border: 1px solid var(--glass-border);
+      color: var(--text-muted); transition: all 0.3s ease; backdrop-filter: blur(10px);
     }
-    .tab.active { background: #0284c7; color: white; border-color: #0284c7; }
+    .tab.active { background: var(--btn-grad-1); color: white; border-color: var(--btn-grad-1); box-shadow: 0 0 20px rgba(14, 165, 233, 0.4); }
 
-    .field-label { font-size: 11.5px; color: #94a3b8; margin: 10px 0 4px; font-weight: 600; text-transform: uppercase; }
+    /* NAV BAR */
+    .nav-bar { display: flex; gap: 10px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 5px; }
+    .nav-item {
+      padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 700;
+      background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-muted);
+      white-space: nowrap; transition: 0.2s; backdrop-filter: blur(10px);
+    }
+    .nav-item.active { background: var(--btn-grad-1); color: white; border-color: var(--btn-grad-1); box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4); }
+
+    /* FORMS */
+    .field-label { font-size: 12px; color: var(--text-main); opacity: 0.8; margin: 16px 0 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
     input, select, textarea {
-      width: 100%; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px;
-      font-size: 14px; outline: none; background: #0f172a; color: #f8fafc;
+      width: 100%; border: 1px solid var(--glass-border); border-radius: 12px; padding: 14px;
+      font-size: 15px; outline: none; background: var(--input-bg); color: var(--text-main); transition: 0.3s;
+      backdrop-filter: blur(10px); 
     }
-    input:focus, select:focus, textarea:focus { border-color: #38bdf8; }
+    input:focus, select:focus, textarea:focus { border-color: #38bdf8; box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2); }
 
+    /* BUTTONS */
     .btn-primary {
-      width: 100%; background: linear-gradient(135deg, #0284c7, #0369a1);
-      color: white; border: none; border-radius: 8px;
-      padding: 11px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 14px;
+      width: 100%; background: linear-gradient(135deg, var(--btn-grad-1), var(--btn-grad-2)); 
+      color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px;
+      padding: 14px; font-size: 15px; font-weight: 800; margin-top: 24px; backdrop-filter: blur(10px);
+      transition: 0.3s; box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4); text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: center; align-items: center; gap: 8px;
     }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(37, 99, 235, 0.7); }
+    .btn-primary:disabled { opacity: 0.5; box-shadow: none; transform: none; }
+    
+    .btn-mic {
+      background: var(--input-bg); border: 1px solid #0ea5e9; color: #0ea5e9; border-radius: 8px;
+      padding: 10px 14px; transition: 0.2s; display: flex; align-items: center; gap: 6px; font-weight: bold; margin-bottom: 10px; backdrop-filter: blur(5px);
+    }
+    .btn-mic.listening { background: #ef4444; color: white; border-color: #ef4444; animation: pulse 1.5s infinite; }
 
-    .btn-admin { background: linear-gradient(135deg, #6366f1, #4f46e5); }
-
+    /* SESSION & STREAK */
     .session-bar {
       display: flex; justify-content: space-between; align-items: center;
-      background: #1e293b; border-radius: 12px; padding: 12px 16px;
-      margin-bottom: 20px; border: 1px solid #334155;
+      background: var(--glass-bg); border-radius: 16px; padding: 18px 24px;
+      margin-bottom: 24px; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px var(--shadow);
+      backdrop-filter: blur(24px);
     }
-    .admin-tag {
-      background: #4f46e5; color: white; font-size: 10px; font-weight: 700;
-      padding: 2px 6px; border-radius: 4px; margin-left: 6px;
-    }
-    .logout-btn {
-      background: transparent; border: 1px solid #475569; border-radius: 7px;
-      padding: 6px 12px; font-size: 12px; cursor: pointer; color: #94a3b8;
-    }
+    .streak-badge { background: linear-gradient(135deg, #f59e0b, #ea580c); color: white; font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4); }
+    .admin-tag { background: #4f46e5; color: white; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; margin-left: 8px; text-transform: uppercase; }
+    .logout-btn { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight: 700; color: #ef4444; transition: 0.2s; backdrop-filter: blur(5px); }
+    .logout-btn:hover { background: #ef4444; color: white; }
 
+    /* FEED ENTRIES WITH ANIMATION */
     .entry {
-      background: #1e293b; border: 1px solid #334155; border-radius: 12px;
-      padding: 16px; margin-bottom: 12px;
+      background: var(--card-bg); border: 1px solid var(--glass-border); border-left: 5px solid #0ea5e9;
+      border-radius: 16px; padding: 20px; margin-bottom: 16px; transition: 0.2s; box-shadow: 0 8px 25px var(--shadow);
+      animation: slideUp 0.4s ease forwards; opacity: 0; transform: translateY(20px); backdrop-filter: blur(10px);
     }
-    .entry-meta {
-      display: flex; justify-content: space-between; align-items: baseline;
-      margin-bottom: 8px;
-    }
-    .entry-author { font-size: 14px; font-weight: 700; color: #38bdf8; }
-    .entry-team {
-      font-size: 11px; font-weight: 700; color: #94a3b8; background: #0f172a;
-      border-radius: 5px; padding: 2px 8px; margin-left: 8px; border: 1px solid #334155;
-    }
-    .entry-date-badge { font-size: 11px; color: #f59e0b; font-weight: 600; }
-    .entry-text { font-size: 14.5px; line-height: 1.6; color: #e2e8f0; white-space: pre-wrap; }
+    .entry:hover { transform: translateX(4px) translateY(0) !important; background: var(--card-hover); }
+    .entry-meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+    .entry-author { font-size: 16px; font-weight: 800; color: var(--text-main); }
+    .entry-team { font-size: 11px; font-weight: 800; color: #0284c7; background: rgba(2, 132, 199, 0.15); border-radius: 6px; padding: 4px 10px; margin-left: 12px; text-transform: uppercase; border: 1px solid rgba(2, 132, 199, 0.4); }
+    .entry-date-badge { font-size: 12px; color: var(--text-main); font-weight: 700; background: var(--input-bg); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--glass-border); }
+    .entry-text { font-size: 15px; line-height: 1.7; color: var(--text-main); opacity: 0.9; white-space: pre-wrap; }
+    .del-btn { color: #ef4444; background: none; border: none; font-weight: 800; font-size: 12px; text-transform: uppercase; }
 
-    /* Admin Accounts Table */
-    .user-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12.5px; }
-    .user-table th, .user-table td { padding: 8px; border-bottom: 1px solid #334155; text-align: left; }
-    .user-table th { color: #94a3b8; }
-    .user-pass { color: #f43f5e; font-family: monospace; font-size: 13px; }
-    .del-btn { color: #ef4444; background: none; border: none; cursor: pointer; font-weight: 600; }
+    /* TOASTS */
+    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+    .toast { background: var(--glass-bg); border: 1px solid var(--glass-border); backdrop-filter: blur(15px); color: var(--text-main); padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 40px var(--shadow); font-weight: 600; font-size: 14px; animation: slideInRight 0.3s ease forwards; display: flex; align-items: center; gap: 12px; }
+    .toast.error { border-left: 5px solid #ef4444; }
+    .toast.success { border-left: 5px solid #10b981; }
+
+    /* TABLES */
+    .user-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+    .user-table th, .user-table td { padding: 12px; border-bottom: 1px solid var(--glass-border); text-align: left; }
+    .user-table th { color: #0ea5e9; font-weight: 800; text-transform: uppercase; font-size: 11px; }
+    .user-pass { color: #f43f5e; font-family: monospace; font-size: 14px; background: rgba(225, 29, 72, 0.15); padding: 4px 8px; border-radius: 6px; font-weight: bold; border: 1px solid rgba(225, 29, 72, 0.4); }
+
+    /* ANIMATIONS */
+    @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+    
+    /* LOGO ANIMATIONS */
+    .logo-svg { filter: drop-shadow(0px 0px 15px rgba(56, 189, 248, 0.6)); overflow: visible; }
+    .logo-ring { transform-origin: 50px 50px; animation: spinRing 40s linear infinite; }
+    .logo-rocket { animation: floatRocket 6s ease-in-out infinite; }
+    .logo-exhaust line { animation: exhaustPulse 0.5s alternate infinite ease-in; }
+    .logo-exhaust line:nth-child(1) { animation-delay: 0.0s; }
+    .logo-exhaust line:nth-child(2) { animation-delay: 0.2s; }
+    .logo-exhaust line:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes spinRing { 100% { transform: rotate(360deg); } }
+    @keyframes floatRocket { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
+    @keyframes exhaustPulse { 0% { opacity: 0.2; transform: translateY(-2px); } 100% { opacity: 1; transform: translateY(2px); } }
   </style>
 </head>
-<body>
+<body data-theme="dark">
+  
+  <canvas id="canvas-bg"></canvas>
+  
   <div id="root"></div>
 
-  <!-- CDN scripts -->
+  <div class="time-controller">
+    <div class="time-label" id="time-icon">🌙</div>
+    <input type="range" min="0" max="24" value="2" step="0.1" class="time-slider" id="timeSlider">
+    <div class="time-label" id="time-text">02:00</div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    /* =========================================
+       SOUND SYSTEM
+       ========================================= */
+    let audioCtx = null;
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    window.addEventListener('mousedown', () => {
+      initAudio();
+      if(!audioCtx) return;
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime); 
+      gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+    });
+
+    window.playLoginSound = function() {
+      if(!audioCtx) return;
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.type = 'triangle'; osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.5);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+    };
+
+    window.playUploadSound = function() {
+      if(!audioCtx) return;
+      [392.00, 523.25, 659.25, 783.99].forEach((freq, i) => {
+        setTimeout(() => {
+          const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+          osc.type = 'sine'; osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+        }, i * 60); 
+      });
+    };
+
+    /* =========================================
+       CANVAS: DYNAMIC SKY, SUN, MOON, CLOUDS & SILHOUETTE
+       ========================================= */
+    const canvas = document.getElementById('canvas-bg');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    
+    // --- REAL TIME SYNC LOGIC ---
+    const now = new Date();
+    // Get the exact current local time in hours (e.g. 14.5 for 2:30 PM)
+    window.skyTime = now.getHours() + (now.getMinutes() / 60); 
+
+    const slider = document.getElementById('timeSlider');
+    const timeIcon = document.getElementById('time-icon');
+    const timeText = document.getElementById('time-text');
+
+    // Set the slider's initial position to the user's real local time
+    slider.value = window.skyTime;
+
+    // Helper to update the UI based on time
+    const updateTimeUI = (t) => {
+      let hours = Math.floor(t);
+      let mins = Math.floor((t - hours) * 60);
+      timeText.innerText = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+      
+      if (t >= 6 && t <= 18) {
+        timeIcon.innerText = "☀️";
+        document.body.setAttribute('data-theme', 'light');
+      } else {
+        timeIcon.innerText = "🌙";
+        document.body.setAttribute('data-theme', 'dark');
+      }
+    };
+
+    // Run once on load to set the correct theme and text immediately
+    updateTimeUI(window.skyTime);
+
+    slider.addEventListener('input', (e) => {
+      window.skyTime = parseFloat(e.target.value);
+      updateTimeUI(window.skyTime);
+    });
+
+    const resize = () => { 
+      width = window.innerWidth; height = window.innerHeight; 
+      canvas.width = width; canvas.height = height;
+    };
+    window.addEventListener('resize', resize); resize();
+    
+    // Assets Generation
+    const stars = Array(200).fill().map(() => ({ 
+      x: Math.random()*2000, y: Math.random()*2000, 
+      size: Math.random()*1.5, twinkleSpeed: Math.random() * 0.05 + 0.01, opacity: Math.random()
+    }));
+
+    const clouds = Array(8).fill().map(() => ({
+      x: Math.random() * width, y: height * 0.1 + Math.random() * (height * 0.3),
+      size: 40 + Math.random() * 60, speed: 0.1 + Math.random() * 0.3
+    }));
+
+    // Draw Fluffy Clouds
+    function drawCloud(x, y, size, opacity, color) {
+      ctx.fillStyle = color;
+      ctx.globalAlpha = opacity;
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.arc(x + size*0.8, y - size*0.3, size*0.8, 0, Math.PI * 2);
+      ctx.arc(x + size*1.5, y, size*0.9, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1.0; // Reset
+    }
+
+    // Draw the "Looking up" Silhouette at the bottom
+    function drawSilhouette() {
+      ctx.fillStyle = '#020617'; // Absolute dark silhouette
+      ctx.beginPath();
+      ctx.moveTo(0, height);
+      ctx.lineTo(0, height - 80);
+      
+      // Rolling hills
+      ctx.quadraticCurveTo(width * 0.2, height - 150, width * 0.5, height - 90);
+      ctx.quadraticCurveTo(width * 0.8, height - 40, width, height - 120);
+      
+      ctx.lineTo(width, height);
+      ctx.fill();
+
+      // Draw a tiny person looking up on the hill
+      const personX = width * 0.35;
+      const personY = height - 110;
+      ctx.beginPath();
+      ctx.arc(personX, personY - 15, 4, 0, Math.PI*2); // Head
+      ctx.fill();
+      ctx.fillRect(personX - 2, personY - 10, 4, 15); // Body
+      ctx.fillRect(personX - 5, personY - 10, 10, 3); // Arms
+    }
+
+    const animateSky = () => {
+      // 1. Calculate time logic (0 to 24)
+      const t = window.skyTime;
+      const isDay = t > 6 && t < 18;
+      
+      // Calculate sun/moon arc angle (12 = top center)
+      const angle = ((t - 6) / 12) * Math.PI; 
+      const centerX = width / 2;
+      const arcRadius = height * 0.7;
+      
+      const sunX = centerX - Math.cos(angle) * arcRadius;
+      const sunY = height - Math.sin(angle) * arcRadius;
+      
+      // Moon is exactly opposite to the sun
+      const moonAngle = angle + Math.PI;
+      const moonX = centerX - Math.cos(moonAngle) * arcRadius;
+      const moonY = height - Math.sin(moonAngle) * arcRadius;
+
+      // 2. Draw Dynamic Sky Background Gradient
+      let skyGrad = ctx.createLinearGradient(0, 0, 0, height);
+      if (t < 5 || t > 19) {
+        // Deep Night
+        skyGrad.addColorStop(0, '#020617'); skyGrad.addColorStop(1, '#0f172a');
+      } else if (t >= 5 && t <= 7) {
+        // Sunrise
+        skyGrad.addColorStop(0, '#312e81'); skyGrad.addColorStop(0.5, '#f43f5e'); skyGrad.addColorStop(1, '#fcd34d');
+      } else if (t > 7 && t < 17) {
+        // High Noon Day
+        skyGrad.addColorStop(0, '#0ea5e9'); skyGrad.addColorStop(1, '#e0f2fe');
+      } else if (t >= 17 && t <= 19) {
+        // Sunset
+        skyGrad.addColorStop(0, '#1e1b4b'); skyGrad.addColorStop(0.5, '#c026d3'); skyGrad.addColorStop(1, '#f59e0b');
+      }
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      // 3. Draw Stars (Fade out during day)
+      let starOpacity = 1;
+      if (isDay) starOpacity = 0;
+      else if (t > 4 && t <= 6) starOpacity = 1 - (t - 4)/2; // Fading out at dawn
+      else if (t >= 18 && t < 20) starOpacity = (t - 18)/2; // Fading in at dusk
+
+      if (starOpacity > 0) {
+        stars.forEach(s => { 
+          s.opacity += Math.sin(Date.now() * s.twinkleSpeed) * 0.05;
+          if(s.opacity < 0.2) s.opacity = 0.2; if(s.opacity > 1) s.opacity = 1;
+          ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity * starOpacity})`;
+          ctx.beginPath(); ctx.arc(s.x % width, s.y % height, s.size, 0, Math.PI*2); ctx.fill(); 
+        });
+      }
+
+      // 4. Draw Sun
+      if (sunY < height + 100) {
+        ctx.shadowBlur = 100; ctx.shadowColor = '#fde047';
+        ctx.fillStyle = '#fffbeb';
+        ctx.beginPath(); ctx.arc(sunX, sunY, 40, 0, Math.PI*2); ctx.fill();
+        ctx.shadowBlur = 0; // Reset
+      }
+
+      // 5. Draw Moon
+      if (moonY < height + 100) {
+        ctx.shadowBlur = 30; ctx.shadowColor = '#cbd5e1';
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath(); ctx.arc(moonX, moonY, 30, 0, Math.PI*2); ctx.fill();
+        // Cut out crescent shape
+        ctx.fillStyle = '#0f172a'; // Match night sky roughly
+        ctx.beginPath(); ctx.arc(moonX + 10, moonY - 10, 25, 0, Math.PI*2); ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      // 6. Draw Moving Clouds
+      let cloudOpacity = isDay ? 0.9 : 0.15; // Barely visible at night
+      let cloudColor = (t >= 5 && t <= 7) || (t >= 17 && t <= 19) ? '#ffedd5' : '#ffffff';
+      
+      clouds.forEach(c => {
+        c.x += c.speed;
+        if (c.x > width + 150) c.x = -150; // Loop back
+        drawCloud(c.x, c.y, c.size, cloudOpacity, cloudColor);
+      });
+
+      // 7. Draw the Foreground Silhouette (Person looking up)
+      drawSilhouette();
+
+      requestAnimationFrame(animateSky);
+    };
+    animateSky();
+  </script>
 
   <script type="text/babel">
-    // -------------------------------------------------------------
-    // REPLACE THESE TWO STRINGS WITH YOUR COPIED KEYS FROM SUPABASE:
     const SUPABASE_URL = "https://xccsvpkdojtopyqthggy.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_-qarPe7On3pQgb-mheQquA_k-QJmrcz";
-    // -------------------------------------------------------------
-    
-    const ADMIN_SECRET = "f6@9pXM1"; // Your secret admin key
-    const supabase = (SUPABASE_URL !== "YOUR_SUPABASE_URL_HERE") ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-
+    const ADMIN_SECRET = "f6@9pXM1"; 
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const { useState, useEffect, useCallback } = React;
+
+    const VectorLogo = ({ size = 100 }) => (
+      <svg className="logo-svg" viewBox="-20 -20 140 140" width={size} height={size} xmlns="http://www.w3.org/2000/svg">
+        <g className="logo-ring">
+          <circle cx="50" cy="50" r="65" fill="none" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" strokeDasharray="350 60" strokeDashoffset="20" />
+        </g>
+        <g className="logo-rocket">
+          <polygon points="50,22 25,58 50,48" fill="#38bdf8" stroke="#38bdf8" strokeWidth="4" strokeLinejoin="round" /> 
+          <polygon points="50,22 75,58 50,48" fill="#8b5cf6" stroke="#8b5cf6" strokeWidth="4" strokeLinejoin="round" /> 
+          <polygon points="50,22 37,42 63,42" fill="#1e40af" stroke="#1e40af" strokeWidth="3" strokeLinejoin="round" /> 
+          <g className="logo-exhaust">
+            <line x1="40" y1="63" x2="40" y2="85" stroke="#38bdf8" strokeWidth="5" strokeLinecap="round" />
+            <line x1="50" y1="53" x2="50" y2="92" stroke="#38bdf8" strokeWidth="5" strokeLinecap="round" />
+            <line x1="60" y1="63" x2="60" y2="85" stroke="#38bdf8" strokeWidth="5" strokeLinecap="round" />
+          </g>
+        </g>
+      </svg>
+    );
 
     function App() {
       const [entries, setEntries] = useState([]);
       const [userList, setUserList] = useState([]);
       const [session, setSession] = useState(null);
       const [loading, setLoading] = useState(true);
+      const [activePage, setActivePage] = useState('feed'); 
+      const [toasts, setToasts] = useState([]);
 
       const [authMode, setAuthMode] = useState('login');
-      const [loginId, setLoginId] = useState('');
-      const [loginPw, setLoginPw] = useState('');
-      const [suId, setSuId] = useState('');
-      const [suPw, setSuPw] = useState('');
-      const [suName, setSuName] = useState('');
-      const [suTeam, setSuTeam] = useState('Production mechanical');
+      const [loginId, setLoginId] = useState(''); const [loginPw, setLoginPw] = useState('');
+      const [suId, setSuId] = useState(''); const [suPw, setSuPw] = useState(''); const [suName, setSuName] = useState(''); const [suTeam, setSuTeam] = useState('Production Mechanical');
       const [adminKeyInput, setAdminKeyInput] = useState('');
-      const [authError, setAuthError] = useState(null);
-
+      
       const todayISO = new Date().toISOString().slice(0, 10);
       const [selectedDate, setSelectedDate] = useState(todayISO);
       const [postText, setPostText] = useState('');
-
+      const [isListening, setIsListening] = useState(false);
       const [teamFilter, setTeamFilter] = useState('ALL');
       const [downloadMonth, setDownloadMonth] = useState(todayISO.slice(0, 7));
 
-      const standardTeams = [
-        "Production Mechanical",
-        " Production Electronics",
-        " Packing",
-        " Aero modelling",
-        " Lab coordinator",
-        " Others"
-      ];
+      const standardTeams = ["Production Mechanical", "Production Electronics", "Packing", "Aero modelling", "Lab coordinator", "Others"];
 
-      // Universal Data Sync
-      const fetchData = useCallback(async () => {
-        if (!supabase) {
-          setLoading(false);
-          return;
+      const addToast = (msg, type = 'success') => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, msg, type }]);
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000);
+      };
+
+      const calculateStreak = () => {
+        if (!session || entries.length === 0) return 0;
+        const userDates = [...new Set(entries.filter(e => e.owner_id === session.id).map(e => e.work_date))].sort().reverse();
+        let currentStreak = 0; let d = new Date();
+        for (let i = 0; i < 30; i++) {
+          const dateStr = d.toISOString().slice(0,10);
+          if (userDates.includes(dateStr)) { currentStreak++; d.setDate(d.getDate() - 1); } 
+          else if (i === 0) { d.setDate(d.getDate() - 1); } 
+          else { break; }
         }
+        return currentStreak;
+      };
+
+      const toggleMic = () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return addToast("Voice dictation not supported.", "error");
+        
+        if (isListening) return;
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false; recognition.interimResults = false;
+        
+        recognition.onstart = () => setIsListening(true);
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          const cleanText = transcript.charAt(0).toUpperCase() + transcript.slice(1) + (transcript.endsWith('.') ? '' : '. ');
+          setPostText(prev => prev ? prev + "\n- " + cleanText : "- " + cleanText);
+          addToast("Audio transcribed!");
+        };
+        recognition.onerror = () => { setIsListening(false); addToast("Recognition failed.", "error"); };
+        recognition.onend = () => setIsListening(false);
+        recognition.start();
+      };
+
+      const fetchData = useCallback(async () => {
         setLoading(true);
         try {
           const { data: eData } = await supabase.from('entries').select('*').order('work_date', { ascending: false });
           const { data: uData } = await supabase.from('users').select('*');
-          if (eData) setEntries(eData);
-          if (uData) setUserList(uData);
-        } catch (err) {
-          console.error(err);
-        } finally {
-          setLoading(false);
-        }
+          if (eData) setEntries(eData); if (uData) setUserList(uData);
+        } catch (err) { addToast("Database connection error.", "error"); } 
+        finally { setLoading(false); }
       }, []);
 
       useEffect(() => { fetchData(); }, [fetchData]);
 
-      const handleSignup = async () => {
-        setAuthError(null);
-        if (!supabase) return setAuthError("Please add your Supabase keys to line 147 first.");
-        const id = suId.trim().toLowerCase();
-        if (!id || !suPw || !suName.trim()) return setAuthError('Fill out all fields.');
-
-        const { data: exists } = await supabase.from('users').select('id').eq('id', id).single();
-        if (exists) return setAuthError('That ID already exists.');
-
-        const { error } = await supabase.from('users').insert([
-          { id, plain_password: suPw, name: suName.trim(), team: suTeam }
-        ]);
-
-        if (error) {
-          setAuthError('Sign up failed: ' + error.message);
-        } else {
-          setSession({ id, name: suName.trim(), team: suTeam, isAdmin: false });
-          fetchData();
-        }
-      };
-
       const handleLogin = async () => {
-        setAuthError(null);
-        if (!supabase) return setAuthError("Please add your Supabase keys to line 147 first.");
         const id = loginId.trim().toLowerCase();
-
         const { data: user } = await supabase.from('users').select('*').eq('id', id).single();
-        if (!user || user.plain_password !== loginPw) {
-          return setAuthError('Wrong user ID or password.');
-        }
-
+        if (!user || user.plain_password !== loginPw) return addToast("Invalid ID or Password", "error");
+        
         setSession({ id: user.id, name: user.name, team: user.team, isAdmin: false });
-      };
-
-      const handleAdminLogin = () => {
-        if (adminKeyInput === ADMIN_SECRET) {
-          setSession({ id: 'admin', name: 'AEROBAY Admin', team: 'Management', isAdmin: true });
-        } else {
-          setAuthError('Invalid Admin Key.');
-        }
+        setActivePage('feed'); 
+        window.playLoginSound(); 
+        addToast(`Welcome back, ${user.name}!`);
       };
 
       const handlePost = async () => {
         if (!postText.trim() || !session) return;
-        const newEntry = {
-          id: 'post_' + Date.now(),
-          text: postText.trim(),
-          author: session.name,
-          team: session.team,
-          owner_id: session.id,
-          work_date: selectedDate,
-          ts: Date.now()
-        };
-
+        const newEntry = { id: 'post_' + Date.now(), text: postText.trim(), author: session.name, team: session.team, owner_id: session.id, work_date: selectedDate, ts: Date.now() };
         const { error } = await supabase.from('entries').insert([newEntry]);
-        if (!error) {
-          setPostText('');
-          fetchData();
+        if (!error) { 
+          setPostText(''); setActivePage('feed'); fetchData(); 
+          window.playUploadSound(); 
+          confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#38bdf8', '#8b5cf6', '#10b981', '#f59e0b'] });
+          addToast("Update published! Great job.");
         }
       };
 
-      const handleDeletePost = async (id) => {
-        await supabase.from('entries').delete().eq('id', id);
-        fetchData();
-      };
-
-      // Admin Superpower: Delete Account
-      const handleDeleteUser = async (userId) => {
-        if (confirm(`Are you sure you want to delete user ${userId}?`)) {
-          await supabase.from('users').delete().eq('id', userId);
-          fetchData();
-        }
-      };
-
-      // Excel Generator
       const downloadTeamExcel = () => {
         const filtered = entries.filter(e => {
           const matchTeam = teamFilter === 'ALL' || e.team === teamFilter;
-          const matchMonth = e.work_date && e.work_date.startsWith(downloadMonth);
-          return matchTeam && matchMonth;
+          return matchTeam && e.work_date && e.work_date.startsWith(downloadMonth);
         });
-
-        if (filtered.length === 0) return alert('No updates found for this team/month.');
-
-        const dataRows = filtered.map(e => ({
-          "Work Date": e.work_date,
-          "Team": e.team,
-          "Member Name": e.author,
-          "Update": e.text
-        }));
-
-        const ws = XLSX.utils.json_to_sheet(dataRows);
-        const wb = XLSX.utils.book_new();
+        if (filtered.length === 0) return addToast("No records found.", "error");
+        const dataRows = filtered.map(e => ({ "Date": e.work_date, "Team": e.team, "Member": e.author, "Update": e.text }));
+        const ws = XLSX.utils.json_to_sheet(dataRows); const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Updates");
-        XLSX.writeFile(wb, `AEROBAY_${teamFilter}_${downloadMonth}.xlsx`);
+        XLSX.writeFile(wb, `Aerobay_${teamFilter}_${downloadMonth}.xlsx`);
+        addToast("Excel downloaded successfully!");
       };
+
+      const teamUpdates = entries.filter(e => session?.isAdmin || (e.team || '').trim().toLowerCase() === (session?.team || '').trim().toLowerCase());
 
       return (
         <div>
-          <div className="brand-header">
-            <div className="brand-logo">AEROBAY</div>
-            <div className="brand-subtitle">Work Updates Portal</div>
+          <div className="toast-container">
+            {toasts.map(t => (
+              <div key={t.id} className={`toast ${t.type}`}>
+                {t.type === 'error' ? '⚠️' : '✅'} {t.msg}
+              </div>
+            ))}
           </div>
 
           {!session ? (
-            <div className="panel">
-              <div className="tabs">
-                <div className={"tab " + (authMode === 'login' ? 'active' : '')} onClick={() => setAuthMode('login')}>User Login</div>
-                <div className={"tab " + (authMode === 'signup' ? 'active' : '')} onClick={() => setAuthMode('signup')}>Register</div>
-                <div className={"tab " + (authMode === 'admin' ? 'active' : '')} onClick={() => setAuthMode('admin')}>Admin Portal</div>
+            <div style={{ marginTop: '5vh' }}>
+              <div className="brand-header">
+                <VectorLogo size={130} />
+                <div className="brand-title">AEROBAY</div>
+                <div className="brand-subtitle">Work update</div>
               </div>
-
-              {authMode === 'login' && (
-                <div>
-                  <div className="field-label">User ID</div>
-                  <input value={loginId} onChange={e => setLoginId(e.target.value)} placeholder="e.g. rohit" />
-                  <div className="field-label">Password</div>
-                  <input type="password" value={loginPw} onChange={e => setLoginPw(e.target.value)} placeholder="••••••••" />
-                  <button className="btn-primary" onClick={handleLogin}>Log In</button>
-                </div>
-              )}
-
-              {authMode === 'signup' && (
-                <div>
-                  <div className="field-label">Choose ID</div>
-                  <input value={suId} onChange={e => setSuId(e.target.value)} placeholder="e.g. rohit" />
-                  <div className="field-label">Password</div>
-                  <input type="password" value={suPw} onChange={e => setSuPw(e.target.value)} placeholder="••••••••" />
-                  <div className="field-label">Full Name</div>
-                  <input value={suName} onChange={e => setSuName(e.target.value)} placeholder="e.g. Rohit Kumar" />
-                  <div className="field-label">Team</div>
-                  <select value={suTeam} onChange={e => setSuTeam(e.target.value)}>
-                    {standardTeams.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                  <button className="btn-primary" onClick={handleSignup}>Create Account</button>
-                </div>
-              )}
-
-              {authMode === 'admin' && (
-                <div>
-                  <div className="field-label">Admin Secret Key</div>
-                  <input type="password" value={adminKeyInput} onChange={e => setAdminKeyInput(e.target.value)} placeholder="Enter admin key" />
-                  <button className="btn-primary btn-admin" onClick={handleAdminLogin}>Access Admin Controls</button>
-                </div>
-              )}
-
-              {authError && <div style={{color: '#ef4444', fontSize: 13, marginTop: 10}}>{authError}</div>}
-            </div>
-          ) : (
-            <div>
-              <div className="session-bar">
-                <div>
-                  Active: <b>{session.name}</b>
-                  {session.isAdmin && <span className="admin-tag">Admin</span>}
-                  <div style={{fontSize: 11, color: '#94a3b8'}}>{session.team}</div>
-                </div>
-                <button className="logout-btn" onClick={() => setSession(null)}>Log Out</button>
-              </div>
-
-              {/* Admin Special Powers Panel */}
-              {session.isAdmin && (
-                <div className="panel" style={{border: '1px solid #6366f1'}}>
-                  <div style={{color: '#818cf8', fontWeight: 700, fontSize: 14, marginBottom: 8}}>
-                    👑 Admin Power: Registered Accounts & Passwords
-                  </div>
-                  <table className="user-table">
-                    <thead>
-                      <tr>
-                        <th>User ID</th>
-                        <th>Name</th>
-                        <th>Team</th>
-                        <th>Password</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {userList.map(u => (
-                        <tr key={u.id}>
-                          <td>{u.id}</td>
-                          <td>{u.name}</td>
-                          <td>{u.team}</td>
-                          <td className="user-pass">{u.plain_password}</td>
-                          <td>
-                            <button className="del-btn" onClick={() => handleDeleteUser(u.id)}>Delete</button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {/* Work Update Input */}
+              
               <div className="panel">
-                <div className="field-label" style={{marginTop: 0}}>Select Date of Work</div>
-                <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} style={{marginBottom: 12}} />
-                <div className="field-label">Work Update Details</div>
-                <textarea rows="3" placeholder="Describe your tasks..." value={postText} onChange={e => setPostText(e.target.value)} />
-                <button className="btn-primary" onClick={handlePost} disabled={!postText.trim()}>Post Update</button>
-              </div>
-            </div>
-          )}
-
-          {/* Excel Export */}
-          <div className="panel">
-            <div style={{fontSize: 14, fontWeight: 700, color: '#38bdf8', marginBottom: 12}}>
-              Team-Wise Excel Download
-            </div>
-            <select value={teamFilter} onChange={e => setTeamFilter(e.target.value)} style={{marginBottom: 10}}>
-              <option value="ALL">All Teams</option>
-              {standardTeams.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <input type="month" value={downloadMonth} onChange={e => setDownloadMonth(e.target.value)} style={{marginBottom: 12}} />
-            <button className="btn-primary" onClick={downloadTeamExcel}>Download Excel Report</button>
-          </div>
-
-          {/* Universal Submissions Feed */}
-          <div style={{fontSize: 13, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 12}}>
-            Live Universal Submissions
-          </div>
-
-          {loading ? (
-            <div style={{textAlign: 'center', color: '#64748b', padding: 20}}>Loading shared data...</div>
-          ) : entries.length === 0 ? (
-            <div style={{textAlign: 'center', color: '#64748b', padding: 20}}>No updates found.</div>
-          ) : (
-            entries.map(e => (
-              <div className="entry" key={e.id}>
-                <div className="entry-meta">
-                  <div>
-                    <span className="entry-author">{e.author}</span>
-                    <span className="entry-team">{e.team}</span>
-                  </div>
-                  <span className="entry-date-badge">📅 {e.work_date}</span>
+                <div className="tabs">
+                  <div className={"tab " + (authMode === 'login' ? 'active' : '')} onClick={() => setAuthMode('login')}>Login</div>
+                  <div className={"tab " + (authMode === 'signup' ? 'active' : '')} onClick={() => setAuthMode('signup')}>Register</div>
+                  <div className={"tab " + (authMode === 'admin' ? 'active' : '')} onClick={() => setAuthMode('admin')}>Admin</div>
                 </div>
-                <div className="entry-text">{e.text}</div>
-                {(session && (session.isAdmin || session.id === e.owner_id)) && (
-                  <div style={{marginTop: 8}}>
-                    <button className="del-btn" onClick={() => handleDeletePost(e.id)}>Delete Log</button>
+
+                {authMode === 'login' && (
+                  <div>
+                    <div className="field-label">User ID</div>
+                    <input value={loginId} onChange={e => setLoginId(e.target.value)} placeholder="e.g. sr" />
+                    <div className="field-label">Password</div>
+                    <input type="password" value={loginPw} onChange={e => setLoginPw(e.target.value)} placeholder="Magical world" />
+                    <button className="btn-primary" onClick={handleLogin}>Access Portal</button>
+                  </div>
+                )}
+                {authMode === 'signup' && (
+                  <div>
+                    <div className="field-label">Create User ID</div>
+                    <input value={suId} onChange={e => setSuId(e.target.value)} placeholder="e.g. sr" />
+                    <div className="field-label">Full Name</div>
+                    <input value={suName} onChange={e => setSuName(e.target.value)} placeholder="e.g. Shahidur Rahman" />
+                    <div className="field-label">Team Assignment</div>
+                    <select value={suTeam} onChange={e => setSuTeam(e.target.value)}>
+                      {standardTeams.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                    <div className="field-label">Password</div>
+                    <input type="password" value={suPw} onChange={e => setSuPw(e.target.value)} placeholder="Magical world" />
+                    <button className="btn-primary" onClick={async () => {
+                      const id = suId.trim().toLowerCase();
+                      if (!id || !suPw || !suName.trim()) return addToast('Please fill all fields', 'error');
+                      const { data: exists } = await supabase.from('users').select('id').eq('id', id).single();
+                      if (exists) return addToast('ID already exists', 'error');
+                      const { error } = await supabase.from('users').insert([{ id, plain_password: suPw, name: suName.trim(), team: suTeam }]);
+                      if (error) addToast(error.message, 'error'); else { setSession({ id, name: suName.trim(), team: suTeam, isAdmin: false }); window.playLoginSound(); setActivePage('feed'); fetchData(); addToast('Account created!'); }
+                    }}>Register Account</button>
+                  </div>
+                )}
+                {authMode === 'admin' && (
+                  <div>
+                    <div className="field-label">Security Key</div>
+                    <input type="password" value={adminKeyInput} onChange={e => setAdminKeyInput(e.target.value)} placeholder="Enter Admin Secret" />
+                    <button className="btn-primary" style={{background: 'linear-gradient(135deg, #6366f1, #4f46e5)'}} onClick={() => {
+                      if (adminKeyInput === ADMIN_SECRET) {
+                        setSession({ id: 'admin', name: 'Administrator', team: 'Management', isAdmin: true });
+                        window.playLoginSound(); setActivePage('admin'); addToast("Admin Access Granted");
+                      } else { addToast("Invalid Admin Key", "error"); }
+                    }}>Verify Admin</button>
                   </div>
                 )}
               </div>
-            ))
+            </div>
+          ) : (
+            <div>
+              <div className="brand-header" style={{marginBottom: 24, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '15px'}}>
+                <VectorLogo size={55} />
+                <div className="brand-title" style={{fontSize: 28, marginTop: 0}}>AEROBAY</div>
+              </div>
+
+              <div className="session-bar">
+                <div>
+                  <div style={{fontSize: 12, color: 'var(--text-muted)', marginBottom: 4, fontWeight: 'bold'}}>
+                    Logged in as
+                    {!session.isAdmin && <span className="streak-badge" style={{marginLeft: 10}}>🔥 {calculateStreak()} Day Streak</span>}
+                  </div>
+                  <div style={{fontSize: 16, color: 'var(--text-main)'}}><b>{session.name}</b> {session.isAdmin && <span className="admin-tag">Admin</span>}</div>
+                  <div style={{fontSize: 13, color: '#0ea5e9', marginTop: 4, fontWeight: 'bold'}}>{session.team}</div>
+                </div>
+                <button className="logout-btn" onClick={() => setSession(null)}>Disconnect</button>
+              </div>
+
+              <div className="nav-bar">
+                <div className={`nav-item ${activePage === 'feed' ? 'active' : ''}`} onClick={() => setActivePage('feed')}>🌐 Live Feed</div>
+                <div className={`nav-item ${activePage === 'post' ? 'active' : ''}`} onClick={() => setActivePage('post')}>✍️ Submit Update</div>
+                <div className={`nav-item ${activePage === 'download' ? 'active' : ''}`} onClick={() => setActivePage('download')}>📊 Reports</div>
+                {session.isAdmin && <div className={`nav-item ${activePage === 'admin' ? 'active' : ''}`} onClick={() => setActivePage('admin')}>🛡️ Admin Center</div>}
+              </div>
+
+              {activePage === 'post' && (
+                <div className="panel">
+                  <h2 style={{fontSize: 18, marginBottom: 20}}>Submit Daily Report</h2>
+                  <div className="field-label" style={{marginTop: 0}}>Work Date</div>
+                  <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} />
+                  
+                  <div className="field-label" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end'}}>
+                    <span>Task Details</span>
+                    <button onClick={toggleMic} className={`btn-mic ${isListening ? 'listening' : ''}`} title="Click to dictate">
+                      {isListening ? '🔴 Recording...' : '🎙️ Dictate Note'}
+                    </button>
+                  </div>
+                  <textarea rows="6" placeholder="List the tasks completed today..." value={postText} onChange={e => setPostText(e.target.value)} />
+                  
+                  <button className="btn-primary" onClick={handlePost} disabled={!postText.trim()}>🚀 Publish Update</button>
+                </div>
+              )}
+
+              {activePage === 'download' && (
+                <div className="panel">
+                  <h2 style={{fontSize: 18, marginBottom: 20}}>Generate Reports</h2>
+                  <div className="field-label" style={{marginTop: 0}}>Filter by Team</div>
+                  <select value={teamFilter} onChange={e => setTeamFilter(e.target.value)}>
+                    <option value="ALL">All Teams (Global)</option>
+                    {standardTeams.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                  <div className="field-label">Select Month</div>
+                  <input type="month" value={downloadMonth} onChange={e => setDownloadMonth(e.target.value)} />
+                  <button className="btn-primary" style={{background: 'linear-gradient(135deg, #10b981, #059669)'}} onClick={downloadTeamExcel}>⬇️ Download .XLSX</button>
+                </div>
+              )}
+
+              {activePage === 'admin' && session.isAdmin && (
+                <div className="panel" style={{border: '1px solid #818cf8'}}>
+                  <h2 style={{fontSize: 18, marginBottom: 20, color: '#818cf8'}}>User Management</h2>
+                  <div style={{overflowX: 'auto'}}>
+                    <table className="user-table">
+                      <thead><tr><th>ID</th><th>Name</th><th>Team</th><th>Pass</th><th>Action</th></tr></thead>
+                      <tbody>
+                        {userList.map(u => (
+                          <tr key={u.id}>
+                            <td><b>{u.id}</b></td><td>{u.name}</td><td>{u.team}</td>
+                            <td><span className="user-pass">{u.plain_password}</span></td>
+                            <td><button className="del-btn" onClick={async () => { if(confirm('Delete?')) { await supabase.from('users').delete().eq('id', u.id); fetchData(); addToast('Deleted'); } }}>Delete</button></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {activePage === 'feed' && (
+                <div>
+                  <div style={{fontSize: 14, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 16, letterSpacing: '1px'}}>
+                    {session.isAdmin ? "Global Activity Feed" : `${session.team} Activity`}
+                  </div>
+
+                  {loading ? (
+                    <div><div className="skeleton"></div><div className="skeleton"></div></div>
+                  ) : teamUpdates.length === 0 ? (
+                    <div style={{textAlign: 'center', color: 'var(--text-muted)', padding: 40, fontWeight: 'bold'}}>No activity recorded yet.</div>
+                  ) : (
+                    teamUpdates.map((e, index) => (
+                      <div className="entry" key={e.id} style={{animationDelay: `${index * 0.1}s`}}>
+                        <div className="entry-meta">
+                          <div>
+                            <span className="entry-author">{e.author}</span>
+                            <span className="entry-team">{e.team}</span>
+                          </div>
+                          <span className="entry-date-badge">📅 {e.work_date}</span>
+                        </div>
+                        <div className="entry-text">{e.text}</div>
+                        {(session.isAdmin || session.id === e.owner_id) && (
+                          <div style={{marginTop: 16, textAlign: 'right'}}>
+                            <button className="del-btn" onClick={async () => { await supabase.from('entries').delete().eq('id', e.id); fetchData(); addToast('Post removed.'); }}>Remove Entry</button>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </div>
       );
     }
-
     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
