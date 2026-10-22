@@ -2,200 +2,790 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Aerobay - Work Update Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <title>Aerobay - Spaceport & Work Update Portal</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap');
 
-    /* --- DYNAMIC GLASSMORPHISM THEME --- */
+    /* --- AEROSPACE MISSION CONTROL DYNAMIC THEME --- */
     :root {
       --text-main: #0f172a;
-      --text-muted: #475569;
-      --glass-bg: rgba(255, 255, 255, 0.5);
-      --glass-border: rgba(255, 255, 255, 0.8);
-      --glass-highlight: rgba(255, 255, 255, 0.4);
-      --input-bg: rgba(255, 255, 255, 0.6);
-      --input-border: rgba(56, 189, 248, 0.4);
-      --card-bg: rgba(255, 255, 255, 0.7);
-      --card-hover: rgba(255, 255, 255, 0.9);
-      --shadow: rgba(0, 0, 0, 0.1);
-      --btn-grad-1: #0ea5e9; --btn-grad-2: #2563eb;
+      --text-muted: #334155;
+      --glass-bg: rgba(255, 255, 255, 0.74);
+      --glass-border: rgba(255, 255, 255, 0.92);
+      --glass-highlight: rgba(255, 255, 255, 0.85);
+      --input-bg: rgba(255, 255, 255, 0.86);
+      --input-border: rgba(14, 165, 233, 0.45);
+      --card-bg: rgba(255, 255, 255, 0.82);
+      --card-hover: rgba(255, 255, 255, 0.96);
+      --shadow: rgba(2, 6, 23, 0.18);
+      --btn-grad-1: #0ea5e9;
+      --btn-grad-2: #2563eb;
+      --hud-accent: #0284c7;
+      --hud-corner: rgba(2, 132, 199, 0.65);
     }
 
     [data-theme="dark"] {
       --text-main: #f8fafc;
       --text-muted: #cbd5e1;
-      --glass-bg: rgba(15, 23, 42, 0.45);
-      --glass-border: rgba(255, 255, 255, 0.15);
-      --glass-highlight: rgba(255, 255, 255, 0.05);
-      --input-bg: rgba(0, 0, 0, 0.3);
-      --input-border: rgba(56, 189, 248, 0.4);
-      --card-bg: rgba(255, 255, 255, 0.05);
-      --card-hover: rgba(255, 255, 255, 0.1);
-      --shadow: rgba(0, 0, 0, 0.5);
-      --btn-grad-1: #0284c7; --btn-grad-2: #1e40af;
+      --glass-bg: rgba(9, 15, 32, 0.68);
+      --glass-border: rgba(56, 189, 248, 0.28);
+      --glass-highlight: rgba(255, 255, 255, 0.12);
+      --input-bg: rgba(2, 6, 23, 0.62);
+      --input-border: rgba(56, 189, 248, 0.45);
+      --card-bg: rgba(15, 23, 42, 0.64);
+      --card-hover: rgba(30, 41, 59, 0.82);
+      --shadow: rgba(0, 0, 0, 0.62);
+      --btn-grad-1: #0284c7;
+      --btn-grad-2: #1d4ed8;
+      --hud-accent: #38bdf8;
+      --hud-corner: rgba(56, 189, 248, 0.75);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; cursor: crosshair; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
 
     body {
-      background-color: #000;
+      background-color: #020617;
       color: var(--text-main);
-      min-height: 100vh; display: flex; flex-direction: column; align-items: center;
-      overflow-x: hidden; transition: color 0.5s ease;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      transition: color 0.35s ease;
     }
 
-    /* THE CANVAS DYNAMIC SKY */
-    #canvas-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
 
-    #root { width: 100%; max-width: 700px; padding: 40px 20px 100px; position: relative; z-index: 1; }
+    /* THE CANVAS DYNAMIC AEROBAY SPACEPORT HUB */
+    #canvas-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: auto;
+      touch-action: manipulation;
+    }
 
-    /* TIME SLIDER CONTROLS */
+    #root {
+      width: 100%;
+      max-width: 780px;
+      padding: 20px 16px 210px;
+      position: relative;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    #root * {
+      pointer-events: auto;
+    }
+
+    /* TOP TELEMETRY STATUS STRIP */
+    .telemetry-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(5, 11, 26, 0.82);
+      border: 1px solid rgba(56, 189, 248, 0.42);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 7px 14px;
+      border-radius: 999px;
+      margin-bottom: 16px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #e2e8f0;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+      flex-wrap: wrap;
+    }
+
+    .telemetry-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .telemetry-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      color: #bae6fd;
+      letter-spacing: 0.4px;
+    }
+
+    /* AEROBAY MISSION CONTROL ENVIRONMENT DOCK (PC & SMARTPHONE ERGONOMIC) */
     .time-controller {
-      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-      background: var(--glass-bg); border: 1px solid var(--glass-border);
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      padding: 12px 24px; border-radius: 30px; box-shadow: 0 10px 30px var(--shadow);
-      display: flex; align-items: center; gap: 15px; z-index: 100;
-      transition: all 0.3s ease; width: 90%; max-width: 400px;
+      position: fixed;
+      bottom: max(12px, env(safe-area-inset-bottom, 12px));
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(6, 12, 28, 0.88);
+      border: 1.5px solid rgba(56, 189, 248, 0.55);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      padding: 10px 16px;
+      border-radius: 22px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.68), 0 0 24px rgba(14, 165, 233, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 100;
+      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 95%;
+      max-width: 750px;
+      color: #f8fafc;
     }
-    .time-label { font-size: 18px; font-weight: bold; color: var(--text-main); }
+
+    .time-controller.dock-minimized {
+      padding: 7px 14px;
+      border-radius: 999px;
+      max-width: 540px;
+    }
+
+    .time-controller.dock-minimized .env-bottom-row {
+      display: none;
+    }
+
+    .env-top-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .env-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      border-top: 1px solid rgba(148, 163, 184, 0.22);
+      padding-top: 8px;
+    }
+
+    .env-pill-group {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .env-pill {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      color: #cbd5e1;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 5px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      letter-spacing: 0.3px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .env-pill:hover {
+      background: rgba(56, 189, 248, 0.22);
+      color: #fff;
+      border-color: #38bdf8;
+      transform: translateY(-1px);
+    }
+
+    .env-pill:active {
+      transform: scale(0.96);
+    }
+
+    .env-pill.active {
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      color: #fff;
+      border-color: #7dd3fc;
+      box-shadow: 0 0 14px rgba(14, 165, 233, 0.55);
+    }
+
+    .env-pill.sound-pill.active-sfx {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      border-color: #6ee7b7;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);
+    }
+
+    .env-pill.sound-pill.muted {
+      background: rgba(239, 68, 68, 0.16);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.45);
+    }
+
+    .env-pill.launch-btn {
+      background: linear-gradient(135deg, #f97316, #dc2626);
+      color: #fff;
+      border-color: #fdba74;
+      box-shadow: 0 0 14px rgba(249, 115, 22, 0.5);
+    }
+
+    .env-pill.launch-btn:hover {
+      transform: translateY(-1px) scale(1.04);
+      box-shadow: 0 0 20px rgba(249, 115, 22, 0.85);
+    }
+
+    .crew-counter-pill {
+      font-size: 11px;
+      font-weight: 800;
+      color: #38bdf8;
+      background: rgba(14, 165, 233, 0.16);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      padding: 4px 10px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    .dock-toggle-btn {
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #bae6fd;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s;
+      white-space: nowrap;
+    }
+
+    .dock-toggle-btn:hover {
+      background: rgba(56, 189, 248, 0.3);
+      color: #fff;
+    }
+
+    .time-label {
+      font-size: 14px;
+      font-weight: 900;
+      color: #f8fafc;
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+      min-width: 46px;
+      text-align: center;
+    }
+
     .time-slider {
-      flex: 1; -webkit-appearance: none; appearance: none;
-      height: 8px; border-radius: 4px; background: var(--input-bg);
-      outline: none; transition: 0.3s;
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #090d1e 0%, #f43f5e 24%, #38bdf8 50%, #f59e0b 76%, #090d1e 100%);
+      outline: none;
+      transition: 0.3s;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      cursor: pointer;
     }
+
     .time-slider::-webkit-slider-thumb {
-      -webkit-appearance: none; appearance: none;
-      width: 22px; height: 22px; border-radius: 50%;
-      background: #f59e0b; cursor: pointer; box-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
-      border: 2px solid white; transition: 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #fef08a, #f59e0b);
+      cursor: pointer;
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.95);
+      border: 2px solid #ffffff;
+      transition: transform 0.15s ease;
     }
-    .time-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
 
-    /* HEADER */
-    .brand-header { text-align: center; margin-bottom: 30px; display: flex; flex-direction: column; align-items: center; }
+    .time-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.18);
+    }
+
+    /* CREATIVE HIGH-CONTRAST AEROBAY COMMAND HEADER & LOGO BADGE */
+    .brand-header {
+      text-align: center;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .brand-crest-shell {
+      position: relative;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      background: linear-gradient(155deg, rgba(6, 12, 30, 0.90), rgba(15, 23, 42, 0.82));
+      border: 2px solid rgba(56, 189, 248, 0.82);
+      box-shadow:
+        0 0 0 4px rgba(15, 23, 42, 0.5),
+        0 18px 42px rgba(2, 6, 23, 0.72),
+        0 0 32px rgba(56, 189, 248, 0.42),
+        inset 0 1px 0 rgba(255, 255, 255, 0.38);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 18px 36px 16px;
+      border-radius: 28px;
+    }
+
+    .brand-crest-shell::before,
+    .brand-crest-shell::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 12px;
+      height: 32px;
+      transform: translateY(-50%);
+      border: 2px solid #38bdf8;
+      opacity: 0.88;
+    }
+
+    .brand-crest-shell::before {
+      left: 10px;
+      border-right: none;
+      border-radius: 8px 0 0 8px;
+    }
+
+    .brand-crest-shell::after {
+      right: 10px;
+      border-left: none;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .brand-compact-bar {
+      display: inline-flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 16px;
+      background: linear-gradient(145deg, rgba(6, 12, 30, 0.90), rgba(15, 23, 42, 0.84));
+      border: 2px solid rgba(56, 189, 248, 0.82);
+      box-shadow:
+        0 0 0 3px rgba(15, 23, 42, 0.45),
+        0 12px 32px rgba(2, 6, 23, 0.6),
+        0 0 24px rgba(56, 189, 248, 0.38);
+      padding: 10px 26px;
+      border-radius: 999px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
     .brand-title {
-      font-size: 42px; font-weight: 900; letter-spacing: 6px;
-      background: linear-gradient(135deg, #38bdf8, #818cf8);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      text-transform: uppercase; margin-top: 10px;
-      filter: drop-shadow(0 4px 15px rgba(56, 189, 248, 0.4));
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: 7px;
+      background: linear-gradient(180deg, #ffffff 0%, #bae6fd 45%, #38bdf8 80%, #a78bfa 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+      margin-top: 8px;
+      -webkit-text-stroke: 1px rgba(56, 189, 248, 0.45);
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 16px rgba(56, 189, 248, 0.65));
     }
-    .brand-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 4px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
 
-    /* GLASS PANELS */
+    .brand-subtitle {
+      font-size: 11px;
+      color: #e2e8f0;
+      margin-top: 6px;
+      font-weight: 800;
+      letter-spacing: 2.6px;
+      text-transform: uppercase;
+      background: rgba(14, 165, 233, 0.24);
+      border: 1px solid rgba(125, 211, 252, 0.58);
+      padding: 4px 14px;
+      border-radius: 999px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      display: inline-block;
+      animation: pulse 1.5s infinite;
+    }
+
+    /* AEROSPACE HUD GLASS PANELS */
     .panel {
+      position: relative;
       background: var(--glass-bg);
-      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-      border: 1px solid var(--glass-border); border-top: 1px solid var(--glass-highlight);
-      border-radius: 20px; padding: 28px; margin-bottom: 24px;
-      box-shadow: 0 15px 35px var(--shadow); transition: all 0.3s ease;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-top: 1px solid var(--glass-highlight);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 16px 38px var(--shadow);
+      transition: all 0.3s ease;
+    }
+
+    .panel::before,
+    .panel::after {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .panel::before {
+      top: 8px;
+      left: 8px;
+      border-top: 2px solid var(--hud-corner);
+      border-left: 2px solid var(--hud-corner);
+      border-top-left-radius: 6px;
+    }
+
+    .panel::after {
+      bottom: 8px;
+      right: 8px;
+      border-bottom: 2px solid var(--hud-corner);
+      border-right: 2px solid var(--hud-corner);
+      border-bottom-right-radius: 6px;
     }
 
     /* TABS */
-    .tabs { display: flex; gap: 12px; margin-bottom: 24px; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
     .tab {
-      flex: 1; text-align: center; padding: 12px; border-radius: 12px;
-      font-size: 14px; font-weight: 600; background: var(--input-bg); border: 1px solid var(--glass-border);
-      color: var(--text-muted); transition: all 0.3s ease; backdrop-filter: blur(10px);
+      flex: 1;
+      text-align: center;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 800;
+      background: var(--input-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.22s ease;
+      backdrop-filter: blur(10px);
+      user-select: none;
     }
-    .tab.active { background: var(--btn-grad-1); color: white; border-color: var(--btn-grad-1); box-shadow: 0 0 20px rgba(14, 165, 233, 0.4); }
+    .tab.active {
+      background: linear-gradient(135deg, var(--btn-grad-1), var(--btn-grad-2));
+      color: white;
+      border-color: #38bdf8;
+      box-shadow: 0 0 20px rgba(14, 165, 233, 0.45);
+    }
 
     /* NAV BAR */
-    .nav-bar { display: flex; gap: 10px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 5px; }
-    .nav-item {
-      padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 700;
-      background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-muted);
-      white-space: nowrap; transition: 0.2s; backdrop-filter: blur(10px);
+    .nav-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      scrollbar-width: none;
     }
-    .nav-item.active { background: var(--btn-grad-1); color: white; border-color: var(--btn-grad-1); box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4); }
+    .nav-bar::-webkit-scrollbar { display: none; }
+    .nav-item {
+      padding: 11px 18px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 800;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--text-main);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      user-select: none;
+    }
+    .nav-item:hover {
+      border-color: #38bdf8;
+      transform: translateY(-1px);
+    }
+    .nav-item.active {
+      background: linear-gradient(135deg, var(--btn-grad-1), var(--btn-grad-2));
+      color: white;
+      border-color: #38bdf8;
+      box-shadow: 0 6px 18px rgba(14, 165, 233, 0.45);
+    }
 
-    /* FORMS */
-    .field-label { font-size: 12px; color: var(--text-main); opacity: 0.8; margin: 16px 0 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+    /* FORMS (16px font on mobile prevents iOS auto-zoom) */
+    .field-label {
+      font-size: 11.5px;
+      color: var(--text-main);
+      opacity: 0.92;
+      margin: 16px 0 8px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
     input, select, textarea {
-      width: 100%; border: 1px solid var(--glass-border); border-radius: 12px; padding: 14px;
-      font-size: 15px; outline: none; background: var(--input-bg); color: var(--text-main); transition: 0.3s;
+      width: 100%;
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 13px 14px;
+      font-size: 16px;
+      outline: none;
+      background: var(--input-bg);
+      color: var(--text-main);
+      transition: 0.22s;
       backdrop-filter: blur(10px);
     }
-    input:focus, select:focus, textarea:focus { border-color: #38bdf8; box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2); }
+    input:focus, select:focus, textarea:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.24);
+    }
 
     /* BUTTONS */
     .btn-primary {
-      width: 100%; background: linear-gradient(135deg, var(--btn-grad-1), var(--btn-grad-2));
-      color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px;
-      padding: 14px; font-size: 15px; font-weight: 800; margin-top: 24px; backdrop-filter: blur(10px);
-      transition: 0.3s; box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4); text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: center; align-items: center; gap: 8px;
+      width: 100%;
+      background: linear-gradient(135deg, var(--btn-grad-1), var(--btn-grad-2));
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 800;
+      margin-top: 20px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: all 0.22s ease;
+      box-shadow: 0 8px 25px rgba(37, 99, 235, 0.42);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
     }
-    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(37, 99, 235, 0.7); }
-    .btn-primary:disabled { opacity: 0.5; box-shadow: none; transform: none; }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(37, 99, 235, 0.7);
+    }
+    .btn-primary:active:not(:disabled) {
+      transform: translateY(0) scale(0.99);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      box-shadow: none;
+      transform: none;
+      cursor: not-allowed;
+    }
 
     .btn-mic {
-      background: var(--input-bg); border: 1px solid #0ea5e9; color: #0ea5e9; border-radius: 8px;
-      padding: 10px 14px; transition: 0.2s; display: flex; align-items: center; gap: 6px; font-weight: bold; margin-bottom: 10px; backdrop-filter: blur(5px);
+      background: var(--input-bg);
+      border: 1px solid #0ea5e9;
+      color: #0ea5e9;
+      border-radius: 9px;
+      padding: 9px 13px;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 800;
+      font-size: 12.5px;
+      margin-bottom: 8px;
+      backdrop-filter: blur(6px);
     }
-    .btn-mic.listening { background: #ef4444; color: white; border-color: #ef4444; animation: pulse 1.5s infinite; }
-    .btn-mic:disabled { opacity: 0.5; }
+    .btn-mic:hover:not(:disabled) {
+      background: rgba(14, 165, 233, 0.15);
+    }
+    .btn-mic.listening {
+      background: #ef4444;
+      color: white;
+      border-color: #ef4444;
+      animation: pulse 1.5s infinite;
+    }
+    .btn-mic:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* SESSION & STREAK */
     .session-bar {
-      display: flex; justify-content: space-between; align-items: center;
-      background: var(--glass-bg); border-radius: 16px; padding: 18px 24px;
-      margin-bottom: 24px; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px var(--shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      background: var(--glass-bg);
+      border-radius: 18px;
+      padding: 16px 20px;
+      margin-bottom: 18px;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 12px 32px var(--shadow);
       backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
     }
-    .streak-badge { background: linear-gradient(135deg, #f59e0b, #ea580c); color: white; font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4); }
-    .admin-tag { background: #4f46e5; color: white; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; margin-left: 8px; text-transform: uppercase; }
-    .logout-btn { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight: 700; color: #ef4444; transition: 0.2s; backdrop-filter: blur(5px); }
+    .streak-badge {
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      color: white;
+      font-size: 11.5px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.45);
+    }
+    .admin-tag {
+      background: #4f46e5;
+      color: white;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      margin-left: 8px;
+      text-transform: uppercase;
+    }
+    .logout-btn {
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      border-radius: 10px;
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #ef4444;
+      cursor: pointer;
+      transition: 0.2s;
+      backdrop-filter: blur(5px);
+    }
     .logout-btn:hover { background: #ef4444; color: white; }
 
     /* FEED ENTRIES WITH ANIMATION */
     .entry {
-      background: var(--card-bg); border: 1px solid var(--glass-border); border-left: 5px solid #0ea5e9;
-      border-radius: 16px; padding: 20px; margin-bottom: 16px; transition: 0.2s; box-shadow: 0 8px 25px var(--shadow);
-      animation: slideUp 0.4s ease forwards; opacity: 0; transform: translateY(20px); backdrop-filter: blur(10px);
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      border-left: 5px solid #0ea5e9;
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      transition: 0.22s;
+      box-shadow: 0 8px 25px var(--shadow);
+      animation: slideUp 0.38s ease forwards;
+      opacity: 0;
+      transform: translateY(18px);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
     }
-    .entry:hover { transform: translateX(4px) translateY(0) !important; background: var(--card-hover); }
-    .entry-meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
-    .entry-author { font-size: 16px; font-weight: 800; color: var(--text-main); }
-    .entry-team { font-size: 11px; font-weight: 800; color: #0284c7; background: rgba(2, 132, 199, 0.15); border-radius: 6px; padding: 4px 10px; margin-left: 12px; text-transform: uppercase; border: 1px solid rgba(2, 132, 199, 0.4); }
-    .entry-date-badge { font-size: 12px; color: var(--text-main); font-weight: 700; background: var(--input-bg); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--glass-border); }
-    .entry-text { font-size: 15px; line-height: 1.7; color: var(--text-main); opacity: 0.9; white-space: pre-wrap; }
-    .del-btn { color: #ef4444; background: none; border: none; font-weight: 800; font-size: 12px; text-transform: uppercase; }
+    .entry:hover {
+      transform: translateX(4px) translateY(0) !important;
+      background: var(--card-hover);
+    }
+    .entry-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+    .entry-author { font-size: 15.5px; font-weight: 800; color: var(--text-main); }
+    .entry-team {
+      font-size: 11px;
+      font-weight: 800;
+      color: #0284c7;
+      background: rgba(2, 132, 199, 0.15);
+      border-radius: 6px;
+      padding: 3px 9px;
+      margin-left: 8px;
+      text-transform: uppercase;
+      border: 1px solid rgba(2, 132, 199, 0.4);
+    }
+    [data-theme="dark"] .entry-team { color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); }
+    .entry-date-badge {
+      font-size: 12px;
+      color: var(--text-main);
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--input-bg);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--glass-border);
+    }
+    .entry-text { font-size: 15px; line-height: 1.7; color: var(--text-main); opacity: 0.94; white-space: pre-wrap; word-break: break-word; }
+    .del-btn { color: #ef4444; background: none; border: none; font-weight: 800; font-size: 12px; text-transform: uppercase; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+    .del-btn:hover { background: rgba(239, 68, 68, 0.14); }
 
     /* TOASTS */
-    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-    .toast { background: var(--glass-bg); border: 1px solid var(--glass-border); backdrop-filter: blur(15px); color: var(--text-main); padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 40px var(--shadow); font-weight: 600; font-size: 14px; animation: slideInRight 0.3s ease forwards; display: flex; align-items: center; gap: 12px; }
+    .toast-container { position: fixed; top: 16px; right: 16px; left: 16px; pointer-events: none; z-index: 9999; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+    .toast {
+      pointer-events: auto;
+      background: rgba(9, 15, 32, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      backdrop-filter: blur(18px);
+      color: #f8fafc;
+      padding: 13px 18px;
+      border-radius: 12px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+      font-weight: 700;
+      font-size: 13px;
+      animation: slideInRight 0.28s ease forwards;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 100%;
+    }
     .toast.error { border-left: 5px solid #ef4444; }
     .toast.success { border-left: 5px solid #10b981; }
 
     /* TABLES */
-    .user-table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
-    .user-table th, .user-table td { padding: 12px; border-bottom: 1px solid var(--glass-border); text-align: left; }
-    .user-table th { color: #0ea5e9; font-weight: 800; text-transform: uppercase; font-size: 11px; }
-    .user-pass { color: #f43f5e; font-family: monospace; font-size: 14px; background: rgba(225, 29, 72, 0.15); padding: 4px 8px; border-radius: 6px; font-weight: bold; border: 1px solid rgba(225, 29, 72, 0.4); }
+    .user-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+    .user-table th, .user-table td { padding: 11px 10px; border-bottom: 1px solid var(--glass-border); text-align: left; }
+    .user-table th { color: #0ea5e9; font-weight: 800; text-transform: uppercase; font-size: 11px; letter-spacing: 0.6px; }
 
     /* ANIMATIONS */
     @keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
     @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55); } 70% { box-shadow: 0 0 0 9px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
 
     /* LOGO ANIMATIONS */
-    .logo-svg { filter: drop-shadow(0px 0px 15px rgba(56, 189, 248, 0.6)); overflow: visible; }
-    .logo-ring { transform-origin: 50px 50px; animation: spinRing 40s linear infinite; }
-    .logo-rocket { animation: floatRocket 6s ease-in-out infinite; }
-    .logo-exhaust line { animation: exhaustPulse 0.5s alternate infinite ease-in; }
+    .logo-svg { filter: drop-shadow(0px 4px 14px rgba(2, 6, 23, 0.85)) drop-shadow(0px 0px 18px rgba(56, 189, 248, 0.75)); overflow: visible; }
+    .logo-ring { transform-origin: 50px 50px; animation: spinRing 36s linear infinite; }
+    .logo-ring-rev { transform-origin: 50px 50px; animation: spinRingRev 24s linear infinite; }
+    .logo-rocket { animation: floatRocket 4.5s ease-in-out infinite; }
+    .logo-exhaust line { animation: exhaustPulse 0.45s alternate infinite ease-in; }
     .logo-exhaust line:nth-child(1) { animation-delay: 0.0s; }
-    .logo-exhaust line:nth-child(2) { animation-delay: 0.2s; }
-    .logo-exhaust line:nth-child(3) { animation-delay: 0.4s; }
+    .logo-exhaust line:nth-child(2) { animation-delay: 0.15s; }
+    .logo-exhaust line:nth-child(3) { animation-delay: 0.3s; }
     @keyframes spinRing { 100% { transform: rotate(360deg); } }
-    @keyframes floatRocket { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
-    @keyframes exhaustPulse { 0% { opacity: 0.2; transform: translateY(-2px); } 100% { opacity: 1; transform: translateY(2px); } }
+    @keyframes spinRingRev { 100% { transform: rotate(-360deg); } }
+    @keyframes floatRocket { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-4px); } }
+    @keyframes exhaustPulse { 0% { opacity: 0.3; transform: translateY(-2px); } 100% { opacity: 1; transform: translateY(3px); } }
 
     /* --- RBAC ADDITIONS --- */
     .skeleton { height: 90px; border-radius: 16px; background: var(--card-bg); border: 1px solid var(--glass-border); margin-bottom: 16px; animation: pulseSk 1.2s ease-in-out infinite; }
     @keyframes pulseSk { 0%,100% { opacity: .4; } 50% { opacity: .9; } }
-    .btn-google { width: 100%; margin-top: 12px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--glass-border); border-radius: 12px; padding: 13px; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; backdrop-filter: blur(10px); transition: .2s; }
+    .btn-google {
+      width: 100%;
+      margin-top: 12px;
+      background: var(--input-bg);
+      color: var(--text-main);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 13px;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      backdrop-filter: blur(10px);
+      transition: .2s;
+    }
     .btn-google:hover { background: var(--card-hover); transform: translateY(-1px); }
     .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0 4px; color: var(--text-muted); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
     .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--glass-border); }
@@ -203,16 +793,73 @@
     .badge-level { font-size: 11px; font-weight: 800; color: #8b5cf6; background: rgba(139,92,246,.15); border: 1px solid rgba(139,92,246,.4); border-radius: 6px; padding: 3px 8px; margin-left: 8px; text-transform: uppercase; }
     .badge-ok { background: rgba(16,185,129,.15); border: 1px solid rgba(16,185,129,.4); color: #10b981; font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; }
     .chip { display: inline-flex; align-items: center; gap: 6px; background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.4); color: #ef4444; border-radius: 20px; padding: 6px 12px; font-size: 12px; font-weight: 800; margin: 4px 6px 4px 0; }
-    .btn-small { background: var(--input-bg); border: 1px solid #0ea5e9; color: #0ea5e9; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 800; transition: .2s; white-space: nowrap; }
+    .btn-small { background: var(--input-bg); border: 1px solid #0ea5e9; color: #0ea5e9; border-radius: 8px; padding: 7px 12px; font-size: 12px; font-weight: 800; cursor: pointer; transition: .2s; white-space: nowrap; }
     .btn-small:hover { background: #0ea5e9; color: #fff; }
     .btn-small.danger { border-color: #ef4444; color: #ef4444; }
     .btn-small.danger:hover { background: #ef4444; color: #fff; }
-    .link { color: #38bdf8; font-size: 13px; font-weight: 700; text-align: right; margin-top: 10px; }
+    .link { color: #0284c7; font-size: 13px; font-weight: 800; text-align: right; margin-top: 10px; cursor: pointer; }
+    [data-theme="dark"] .link { color: #38bdf8; }
     .link:hover { text-decoration: underline; }
     .dept-heading { font-size: 12px; font-weight: 800; color: #0284c7; text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px; display: flex; align-items: center; gap: 8px; }
+    [data-theme="dark"] .dept-heading { color: #38bdf8; }
     .dept-heading::after { content: ''; flex: 1; height: 1px; background: var(--glass-border); }
-    .check-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); font-weight: 700; margin-top: 12px; }
+    .check-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); font-weight: 700; margin-top: 12px; cursor: pointer; flex-wrap: wrap; }
     .check-row input { width: auto; }
+
+    /* MODAL FOR SANDBOX-SAFE CONFIRM/PROMPT */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.76);
+      backdrop-filter: blur(10px);
+      z-index: 9998;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-card {
+      background: var(--glass-bg);
+      border: 1.5px solid #38bdf8;
+      border-radius: 20px;
+      padding: 24px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+      color: var(--text-main);
+    }
+
+    /* SMARTPHONE & TABLET RESPONSIVE OPTIMIZATIONS */
+    @media (max-width: 640px) {
+      #root {
+        padding: 12px 12px 235px;
+      }
+      .brand-title { font-size: 26px; letter-spacing: 4px; }
+      .brand-crest-shell { padding: 14px 20px 12px; border-radius: 22px; }
+      .brand-compact-bar { padding: 8px 16px; gap: 10px; }
+      .panel { padding: 18px 16px; border-radius: 16px; }
+      .session-bar { padding: 14px 16px; }
+      .time-controller {
+        width: 96%;
+        padding: 8px 12px;
+        border-radius: 18px;
+      }
+      .env-bottom-row {
+        gap: 6px;
+      }
+      .env-pill-group {
+        width: 100%;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+      }
+      .env-pill-group::-webkit-scrollbar { display: none; }
+      .telemetry-strip {
+        padding: 6px 12px;
+        font-size: 10px;
+      }
+    }
   </style>
 </head>
 <body data-theme="dark">
@@ -221,10 +868,35 @@
 
   <div id="root"></div>
 
-  <div class="time-controller">
-    <div class="time-label" id="time-icon">🌙</div>
-    <input type="range" min="0" max="24" value="2" step="0.1" class="time-slider" id="timeSlider">
-    <div class="time-label" id="time-text">02:00</div>
+  <!-- AEROBAY SPACEPORT ENVIRONMENT, ACOUSTIC & TELEMETRY CONTROLLER -->
+  <div class="time-controller" id="env-dock">
+    <div class="env-top-row">
+      <div class="time-label" id="time-icon" title="Current solar phase">🌙</div>
+      <input type="range" min="0" max="24" value="14" step="0.05" class="time-slider" id="timeSlider" aria-label="Aerobay Time Slider">
+      <div class="time-label" id="time-text">14:00</div>
+      <button type="button" class="env-pill sound-pill active" id="sound-mode-btn" title="Cycle Sound Mode: Full SFX + Spaceport Ambience / SFX Only / Muted">
+        🔊 SFX+AMB
+      </button>
+      <div class="crew-counter-pill" id="crew-counter-pill" title="Tap or hover any crew member on the Spaceport tarmac!">
+        👨‍🚀 <span id="crew-count-num">1</span> Crew
+      </div>
+      <button type="button" class="dock-toggle-btn" id="dock-collapse-btn" title="Minimize or expand environment controls">
+        ▾ Hide
+      </button>
+    </div>
+    <div class="env-bottom-row">
+      <div class="env-pill-group">
+     <span class="env-pill active" style="cursor: default; pointer-events: none;">🇮🇳 IST (UTC+5:30)</span>
+   </div>
+      <div class="env-pill-group" id="weather-group">
+        <button type="button" class="env-pill active" data-weather="clear">☀️ Clear</button>
+        <button type="button" class="env-pill" data-weather="rain">🌧️ Rain</button>
+        <button type="button" class="env-pill" data-weather="storm">⛈️ Storm</button>
+        <button type="button" class="env-pill" data-weather="snow">❄️ Snow</button>
+        <button type="button" class="env-pill" data-weather="aurora">🌌 Aurora</button>
+        <button type="button" class="env-pill launch-btn" id="launch-rocket-btn">🚀 Launch</button>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -235,183 +907,1943 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <script>
-    /* =========================================
-       SOUND SYSTEM
-       ========================================= */
+    /* ============================================================================
+       ADVANCED WEB AUDIO API ACOUSTIC & SOUND EFFECTS ENGINE (PC & SMARTPHONE)
+       ============================================================================ */
     let audioCtx = null;
-    function initAudio() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+    let masterGain = null;
+    let sfxGain = null;
+    let ambGain = null;
+    let sharedNoiseBuffer = null;
+    let rainNode = null;
+    let rainFilter = null;
+    let rainGainNode = null;
+    let padDroneOsc1 = null;
+    let padDroneOsc2 = null;
+    let padDroneGain = null;
+
+    // Modes: 'ALL' (SFX + Ambience), 'SFX' (SFX Only), 'MUTE' (Muted)
+    window.soundMode = localStorage.getItem('aerobay_sound_mode') || 'ALL';
+
+    function createPinkNoiseBuffer(ctx, seconds = 3) {
+      const bufferSize = ctx.sampleRate * seconds;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = buffer.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.045;
+        b6 = white * 0.115926;
+      }
+      return buffer;
     }
-    window.addEventListener('mousedown', () => {
-      initAudio();
-      if(!audioCtx) return;
-      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-      osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        audioCtx = new AudioContextClass();
+
+        masterGain = audioCtx.createGain();
+        sfxGain = audioCtx.createGain();
+        ambGain = audioCtx.createGain();
+
+        sfxGain.connect(masterGain);
+        ambGain.connect(masterGain);
+        masterGain.connect(audioCtx.destination);
+
+        sharedNoiseBuffer = createPinkNoiseBuffer(audioCtx, 4);
+        setupAmbientLoops();
+        applySoundModeGains();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
+    }
+
+    function setupAmbientLoops() {
+      if (!audioCtx || !sharedNoiseBuffer) return;
+
+      // 1. Continuous Weather Rain / Wind Generator
+      rainNode = audioCtx.createBufferSource();
+      rainNode.buffer = sharedNoiseBuffer;
+      rainNode.loop = true;
+
+      rainFilter = audioCtx.createBiquadFilter();
+      rainFilter.type = 'bandpass';
+      rainFilter.frequency.value = 950;
+      rainFilter.Q.value = 0.7;
+
+      rainGainNode = audioCtx.createGain();
+      rainGainNode.gain.value = 0.0001;
+
+      rainNode.connect(rainFilter);
+      rainFilter.connect(rainGainNode);
+      rainGainNode.connect(ambGain);
+      rainNode.start();
+
+      // 2. Subtle Spaceport Telemetry Harmonic Pad Drone
+      padDroneOsc1 = audioCtx.createOscillator();
+      padDroneOsc2 = audioCtx.createOscillator();
+      const droneFilter = audioCtx.createBiquadFilter();
+      padDroneGain = audioCtx.createGain();
+
+      padDroneOsc1.type = 'sine';
+      padDroneOsc2.type = 'triangle';
+      padDroneOsc1.frequency.value = 55; // A1 sub harmonic
+      padDroneOsc2.frequency.value = 110.2; // Binaural fifth/octave shimmer
+
+      droneFilter.type = 'lowpass';
+      droneFilter.frequency.value = 220;
+      padDroneGain.gain.value = 0.015;
+
+      padDroneOsc1.connect(droneFilter);
+      padDroneOsc2.connect(droneFilter);
+      droneFilter.connect(padDroneGain);
+      padDroneGain.connect(ambGain);
+
+      padDroneOsc1.start();
+      padDroneOsc2.start();
+      updateWeatherAmbience();
+    }
+
+    function applySoundModeGains() {
+      const btn = document.getElementById('sound-mode-btn');
+      if (btn) {
+        btn.classList.remove('active', 'active-sfx', 'muted');
+        if (window.soundMode === 'ALL') {
+          btn.innerHTML = '🔊 SFX+AMB';
+          btn.classList.add('active');
+        } else if (window.soundMode === 'SFX') {
+          btn.innerHTML = '🔉 SFX Only';
+          btn.classList.add('active-sfx');
+        } else {
+          btn.innerHTML = '🔇 Muted';
+          btn.classList.add('muted');
+        }
+      }
+      if (!audioCtx || !masterGain) return;
+      const now = audioCtx.currentTime;
+      if (window.soundMode === 'MUTE') {
+        masterGain.gain.setTargetAtTime(0.0001, now, 0.04);
+      } else if (window.soundMode === 'SFX') {
+        masterGain.gain.setTargetAtTime(1.0, now, 0.04);
+        sfxGain.gain.setTargetAtTime(1.0, now, 0.04);
+        ambGain.gain.setTargetAtTime(0.0001, now, 0.08);
+      } else {
+        masterGain.gain.setTargetAtTime(1.0, now, 0.04);
+        sfxGain.gain.setTargetAtTime(1.0, now, 0.04);
+        ambGain.gain.setTargetAtTime(1.0, now, 0.15);
+      }
+      updateWeatherAmbience();
+    }
+
+    function updateWeatherAmbience() {
+      if (!audioCtx || !rainGainNode || !rainFilter || !padDroneGain) return;
+      const now = audioCtx.currentTime;
+      const mode = window.weatherMode || 'clear';
+      if (mode === 'rain') {
+        rainFilter.frequency.setTargetAtTime(1100, now, 0.3);
+        rainGainNode.gain.setTargetAtTime(0.18, now, 0.4);
+      } else if (mode === 'storm') {
+        rainFilter.frequency.setTargetAtTime(800, now, 0.3);
+        rainGainNode.gain.setTargetAtTime(0.32, now, 0.4);
+      } else if (mode === 'snow') {
+        rainFilter.frequency.setTargetAtTime(420, now, 0.3);
+        rainGainNode.gain.setTargetAtTime(0.04, now, 0.4);
+      } else {
+        rainGainNode.gain.setTargetAtTime(0.008, now, 0.4);
+      }
+
+      if (mode === 'aurora') {
+        padDroneOsc2.frequency.setTargetAtTime(164.81, now, 0.5);
+        padDroneGain.gain.setTargetAtTime(0.032, now, 0.5);
+      } else {
+        padDroneOsc2.frequency.setTargetAtTime(110.2, now, 0.5);
+        padDroneGain.gain.setTargetAtTime(0.014, now, 0.5);
+      }
+    }
+
+    // Unlock Web Audio on both PC and Smartphone touch/click gestures
+    ['pointerdown', 'touchstart', 'mousedown', 'keydown'].forEach(evtName => {
+      window.addEventListener(evtName, (e) => {
+        initAudio();
+        if (evtName === 'pointerdown' && e.target) {
+          const interactive = e.target.closest('button, .tab, .nav-item, .env-pill, .dock-toggle-btn, input[type="checkbox"], select');
+          if (interactive) {
+            window.playUiClick(780);
+          }
+        }
+      }, { passive: true });
     });
 
-    window.playLoginSound = function() {
-      if(!audioCtx) return;
-      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-      osc.type = 'triangle'; osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.5);
-      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+    // 1. Tactile High-Tech UI Micro-Click
+    window.playUiClick = function(pitch = 720) {
+      if (!audioCtx || window.soundMode === 'MUTE') return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(pitch, now);
+      osc.frequency.exponentialRampToValueAtTime(pitch * 0.45, now + 0.032);
+      gain.gain.setValueAtTime(0.045, now);
+      gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.035);
+      osc.connect(gain);
+      gain.connect(sfxGain);
+      osc.start(now);
+      osc.stop(now + 0.038);
     };
 
-    window.playUploadSound = function() {
-      if(!audioCtx) return;
-      [392.00, 523.25, 659.25, 783.99].forEach((freq, i) => {
-        setTimeout(() => {
-          const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-          osc.type = 'sine'; osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-          osc.connect(gain); gain.connect(audioCtx.destination);
-          osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-        }, i * 60);
+    // 2. Time Slider Subtle Telemetry Tick
+    let lastSliderTickMs = 0;
+    window.playSliderTick = function(timeVal = 12) {
+      if (!audioCtx || window.soundMode === 'MUTE') return;
+      const nowMs = performance.now();
+      if (nowMs - lastSliderTickMs < 45) return;
+      lastSliderTickMs = nowMs;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      const freq = 420 + (timeVal / 24) * 440;
+      osc.frequency.setValueAtTime(freq, now);
+      gain.gain.setValueAtTime(0.025, now);
+      gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.022);
+      osc.connect(gain);
+      gain.connect(sfxGain);
+      osc.start(now);
+      osc.stop(now + 0.025);
+    };
+
+    // 3. Crew Member Radio Telemetry Chirp (on tap/click of walking astronaut)
+    window.playCrewChirp = function() {
+      initAudio();
+      if (!audioCtx || window.soundMode === 'MUTE') return;
+      const now = audioCtx.currentTime;
+      [1180, 1560].forEach((f, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, now + idx * 0.055);
+        gain.gain.setValueAtTime(0.06, now + idx * 0.055);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.055 + 0.05);
+        osc.connect(gain);
+        gain.connect(sfxGain);
+        osc.start(now + idx * 0.055);
+        osc.stop(now + idx * 0.055 + 0.055);
       });
     };
 
-    /* =========================================
-       CANVAS: DYNAMIC SKY, SUN, MOON, CLOUDS & SILHOUETTE
-       ========================================= */
+    // 4. Login Harmonic Aerospace Chord
+    window.playLoginSound = function() {
+      initAudio();
+      if (!audioCtx || window.soundMode === 'MUTE') return;
+      const notes = [261.63, 329.63, 392.00, 523.25, 659.25];
+      notes.forEach((freq, i) => {
+        const start = audioCtx.currentTime + i * 0.055;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.07, start);
+        gain.gain.exponentialRampToValueAtTime(0.0008, start + 0.45);
+        osc.connect(gain);
+        gain.connect(sfxGain);
+        osc.start(start);
+        osc.stop(start + 0.48);
+      });
+    };
+
+    // 5. AI Summarization Complete Crystalline Shimmer
+    window.playAiCompleteSound = function() {
+      initAudio();
+      if (!audioCtx || window.soundMode === 'MUTE') return;
+      [587.33, 880, 1174.66, 1760].forEach((freq, i) => {
+        const start = audioCtx.currentTime + i * 0.045;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.055, start);
+        gain.gain.exponentialRampToValueAtTime(0.0008, start + 0.28);
+        osc.connect(gain);
+        gain.connect(sfxGain);
+        osc.start(start);
+        osc.stop(start + 0.3);
+      });
+    };
+
+    // 6. Error / Warning Low Double Buzz
+    window.playErrorSound = function() {
+      initAudio();
+      if (!audioCtx || window.soundMode === 'MUTE') return;
+      [190, 145].forEach((freq, i) => {
+        const start = audioCtx.currentTime + i * 0.11;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.05, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.09);
+        osc.connect(gain);
+        gain.connect(sfxGain);
+        osc.start(start);
+        osc.stop(start + 0.1);
+      });
+    };
+
+    // 7. Report Upload Telemetry Fanfare
+    window.playUploadSound = function() {
+      initAudio();
+      if (!audioCtx || window.soundMode === 'MUTE') return;
+      [392.00, 523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+        const start = audioCtx.currentTime + i * 0.06;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.08, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.36);
+        osc.connect(gain);
+        gain.connect(sfxGain);
+        osc.start(start);
+        osc.stop(start + 0.38);
+      });
+    };
+
+    // 8. Countdown Telemetry Beep (T-3, T-2, T-1, T-0)
+    window.playCountdownBeep = function(isFinal = false) {
+      if (!audioCtx || window.soundMode === 'MUTE') return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(isFinal ? 1480 : 980, now);
+      gain.gain.setValueAtTime(isFinal ? 0.09 : 0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + (isFinal ? 0.28 : 0.11));
+      osc.connect(gain);
+      gain.connect(sfxGain);
+      osc.start(now);
+      osc.stop(now + (isFinal ? 0.3 : 0.12));
+    };
+
+    // 9. Multi-Layered Orbital Rocket Ignition, Water Deluge & Acoustic Crackle
+    window.playLaunchSound = function() {
+      initAudio();
+      if (!audioCtx || window.soundMode === 'MUTE') return;
+      const now = audioCtx.currentTime;
+
+      // Layer A: Deep Sub-Bass Turbopump & Thrust Rumble (38Hz -> 95Hz -> 48Hz)
+      const subOsc = audioCtx.createOscillator();
+      const subOsc2 = audioCtx.createOscillator();
+      const subFilter = audioCtx.createBiquadFilter();
+      const subGain = audioCtx.createGain();
+
+      subOsc.type = 'sawtooth';
+      subOsc2.type = 'triangle';
+      subOsc.frequency.setValueAtTime(42, now);
+      subOsc.frequency.exponentialRampToValueAtTime(92, now + 1.4);
+      subOsc.frequency.exponentialRampToValueAtTime(52, now + 4.2);
+
+      subOsc2.frequency.setValueAtTime(28, now);
+      subOsc2.frequency.exponentialRampToValueAtTime(64, now + 1.8);
+
+      subFilter.type = 'lowpass';
+      subFilter.frequency.setValueAtTime(160, now);
+      subFilter.frequency.exponentialRampToValueAtTime(420, now + 2.0);
+      subFilter.frequency.exponentialRampToValueAtTime(140, now + 4.3);
+
+      subGain.gain.setValueAtTime(0.001, now);
+      subGain.gain.linearRampToValueAtTime(0.18, now + 0.35);
+      subGain.gain.setValueAtTime(0.18, now + 2.1);
+      subGain.gain.exponentialRampToValueAtTime(0.001, now + 4.4);
+
+      subOsc.connect(subFilter);
+      subOsc2.connect(subFilter);
+      subFilter.connect(subGain);
+      subGain.connect(sfxGain);
+      subOsc.start(now);
+      subOsc2.start(now);
+      subOsc.stop(now + 4.5);
+      subOsc2.stop(now + 4.5);
+
+      // Layer B: Jet Plume Roar & Water Deluge Steam Hiss (Filtered Pink Noise Sweep)
+      if (sharedNoiseBuffer) {
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = sharedNoiseBuffer;
+        noise.loop = true;
+
+        const roarFilter = audioCtx.createBiquadFilter();
+        roarFilter.type = 'bandpass';
+        roarFilter.Q.value = 0.65;
+        roarFilter.frequency.setValueAtTime(180, now);
+        roarFilter.frequency.exponentialRampToValueAtTime(1250, now + 1.6);
+        roarFilter.frequency.exponentialRampToValueAtTime(320, now + 4.3);
+
+        const roarGain = audioCtx.createGain();
+        roarGain.gain.setValueAtTime(0.001, now);
+        roarGain.gain.linearRampToValueAtTime(0.38, now + 0.4);
+        roarGain.gain.exponentialRampToValueAtTime(0.001, now + 4.4);
+
+        noise.connect(roarFilter);
+        roarFilter.connect(roarGain);
+        roarGain.connect(sfxGain);
+        noise.start(now);
+        noise.stop(now + 4.45);
+      }
+
+      // Layer C: Characteristic Heavy-Lift Acoustic Exhaust Crackle Bursts
+      for (let i = 0; i < 24; i++) {
+        const crackleTime = now + 0.35 + i * 0.14 + Math.random() * 0.08;
+        const cOsc = audioCtx.createOscillator();
+        const cGain = audioCtx.createGain();
+        cOsc.type = 'square';
+        cOsc.frequency.setValueAtTime(90 + Math.random() * 220, crackleTime);
+        cOsc.frequency.exponentialRampToValueAtTime(38, crackleTime + 0.045);
+        const amp = Math.max(0.01, (1 - i / 26) * 0.065);
+        cGain.gain.setValueAtTime(amp, crackleTime);
+        cGain.gain.exponentialRampToValueAtTime(0.0008, crackleTime + 0.05);
+        cOsc.connect(cGain);
+        cGain.connect(sfxGain);
+        cOsc.start(crackleTime);
+        cOsc.stop(crackleTime + 0.055);
+      }
+    };
+
+    // 10. Reusable Booster Double Sonic Boom & Landing Burn Thud
+    window.playBoosterSonicBoom = function() {
+      if (!audioCtx || window.soundMode === 'MUTE') return;
+      const now = audioCtx.currentTime;
+      // Twin Sonic Booms ("BA-BOOM!")
+      [0, 0.22].forEach((offset, idx) => {
+        const t = now + offset;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(idx === 0 ? 95 : 78, t);
+        osc.frequency.exponentialRampToValueAtTime(24, t + 0.32);
+        gain.gain.setValueAtTime(0.22, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+        osc.connect(gain);
+        gain.connect(sfxGain);
+        osc.start(t);
+        osc.stop(t + 0.36);
+      });
+    };
+
+    // 11. Realistic Storm Thunder Clap on Lightning Strike
+    window.playThunderSound = function() {
+      if (!audioCtx || window.soundMode === 'MUTE') return;
+      const now = audioCtx.currentTime;
+      if (sharedNoiseBuffer) {
+        const src = audioCtx.createBufferSource();
+        src.buffer = sharedNoiseBuffer;
+        const filt = audioCtx.createBiquadFilter();
+        filt.type = 'lowpass';
+        filt.frequency.setValueAtTime(420, now);
+        filt.frequency.exponentialRampToValueAtTime(75, now + 2.4);
+
+        const g = audioCtx.createGain();
+        g.gain.setValueAtTime(0.001, now);
+        g.gain.linearRampToValueAtTime(0.32, now + 0.08);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
+
+        src.connect(filt);
+        filt.connect(g);
+        g.connect(sfxGain);
+        src.start(now);
+        src.stop(now + 2.55);
+      }
+    };
+
+    // Sound Mode Toggle Button Handler
+    document.getElementById('sound-mode-btn').addEventListener('click', () => {
+      initAudio();
+      if (window.soundMode === 'ALL') window.soundMode = 'SFX';
+      else if (window.soundMode === 'SFX') window.soundMode = 'MUTE';
+      else window.soundMode = 'ALL';
+      localStorage.setItem('aerobay_sound_mode', window.soundMode);
+      applySoundModeGains();
+      if (window.soundMode !== 'MUTE') window.playCrewChirp();
+    });
+
+    // Dock Minimize / Expand Handler for Smartphone & PC convenience
+    const envDock = document.getElementById('env-dock');
+    const dockCollapseBtn = document.getElementById('dock-collapse-btn');
+    dockCollapseBtn.addEventListener('click', () => {
+      const isMin = envDock.classList.toggle('dock-minimized');
+      dockCollapseBtn.innerHTML = isMin ? '▴ Controls' : '▾ Hide';
+    });
+
+    /* =========================================================
+       AEROBAY HIGH-DPI PHOTOREALISTIC SPACEPORT SIMULATION HUB
+       ========================================================= */
     const canvas = document.getElementById('canvas-bg');
     const ctx = canvas.getContext('2d');
-    let width, height;
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    const now = new Date();
-    window.skyTime = now.getHours() + (now.getMinutes() / 60);
+    const getLocalHours = () => {
+      const d = new Date();
+      return d.getHours() + d.getMinutes() / 60;
+    };
+    const getZoneHours = (offsetHours) => {
+      const d = new Date();
+      const utc = d.getUTCHours() + d.getUTCMinutes() / 60;
+      return ((utc + offsetHours) % 24 + 24) % 24;
+    };
+
+    window.skyTime = getLocalHours();
+    window.weatherMode = 'clear';
+    window.activeTimezoneLabel = 'LOCAL';
 
     const slider = document.getElementById('timeSlider');
     const timeIcon = document.getElementById('time-icon');
     const timeText = document.getElementById('time-text');
+    const crewCountNum = document.getElementById('crew-count-num');
     slider.value = window.skyTime;
 
     const updateTimeUI = (t) => {
-      let hours = Math.floor(t);
-      let mins = Math.floor((t - hours) * 60);
+      let hours = Math.floor(t) % 24;
+      let mins = Math.floor((t - Math.floor(t)) * 60);
       timeText.innerText = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-      if (t >= 6 && t <= 18) { timeIcon.innerText = "☀️"; document.body.setAttribute('data-theme', 'light'); }
-      else { timeIcon.innerText = "🌙"; document.body.setAttribute('data-theme', 'dark'); }
+      if (t >= 6 && t <= 18) {
+        timeIcon.innerText = window.weatherMode === 'rain' ? '🌦️' : window.weatherMode === 'storm' ? '⛈️' : window.weatherMode === 'snow' ? '🌨️' : '☀️';
+        document.body.setAttribute('data-theme', 'light');
+      } else {
+        timeIcon.innerText = window.weatherMode === 'aurora' ? '🌌' : '🌙';
+        document.body.setAttribute('data-theme', 'dark');
+      }
     };
     updateTimeUI(window.skyTime);
 
     slider.addEventListener('input', (e) => {
       window.skyTime = parseFloat(e.target.value);
       updateTimeUI(window.skyTime);
+      window.playSliderTick(window.skyTime);
+    });
+    
+    // Weather buttons
+    document.querySelectorAll('#weather-group .env-pill[data-weather]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#weather-group .env-pill[data-weather]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        window.weatherMode = btn.getAttribute('data-weather');
+        updateTimeUI(window.skyTime);
+        updateWeatherAmbience();
+      });
     });
 
     const resize = () => {
-      width = window.innerWidth; height = window.innerHeight;
-      canvas.width = width; canvas.height = height;
+      width = window.innerWidth;
+      height = window.innerHeight;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
-    window.addEventListener('resize', resize); resize();
+    window.addEventListener('resize', resize);
+    resize();
 
-    const stars = Array(200).fill().map(() => ({
-      x: Math.random()*2000, y: Math.random()*2000,
-      size: Math.random()*1.5, twinkleSpeed: Math.random() * 0.05 + 0.01, opacity: Math.random()
+    // Pointer & Touch tracking for interactive Crew Avatars on both PC & Smartphones
+    let mouseX = -1000, mouseY = -1000;
+    let selectedCrewId = null;
+    let selectedCrewTimer = 0;
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    function handleCanvasInteraction(clientX, clientY) {
+      const groundY = height - 54;
+      let hitAny = false;
+      hubPeople.forEach((p, idx) => {
+        const px = p.normX * width;
+        const py = groundY + (idx % 3) * 4;
+        if (Math.hypot(clientX - px, clientY - (py - 14)) < 34) {
+          p.jumpOffset = 14;
+          p.waveTimer = 140;
+          selectedCrewId = p.id;
+          selectedCrewTimer = 210;
+          hitAny = true;
+        }
+      });
+      if (hitAny) {
+        window.playCrewChirp();
+      }
+    }
+
+    window.addEventListener('click', (e) => {
+      handleCanvasInteraction(e.clientX, e.clientY);
+    });
+
+    window.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches.length > 0) {
+        const t = e.touches[0];
+        mouseX = t.clientX;
+        mouseY = t.clientY;
+        handleCanvasInteraction(t.clientX, t.clientY);
+      }
+    }, { passive: true });
+
+    // Stars & Shooting Stars
+    const stars = Array(260).fill().map(() => ({
+      x: Math.random() * 2400,
+      y: Math.random() * 1400,
+      size: Math.random() * 1.7 + 0.35,
+      twinkleSpeed: Math.random() * 0.04 + 0.01,
+      phase: Math.random() * Math.PI * 2,
+      hue: Math.random() < 0.25 ? '#bae6fd' : Math.random() < 0.5 ? '#fde68a' : '#ffffff'
     }));
 
-    const clouds = Array(8).fill().map(() => ({
-      x: Math.random() * width, y: height * 0.1 + Math.random() * (height * 0.3),
-      size: 40 + Math.random() * 60, speed: 0.1 + Math.random() * 0.3
+    let shootingStar = null;
+
+    const clouds = Array(12).fill().map((_, idx) => ({
+      x: (idx / 12) * 2000,
+      y: 50 + Math.random() * 220,
+      size: 40 + Math.random() * 58,
+      speed: 0.12 + Math.random() * 0.26
     }));
+
+    // Weather particles (rain / snow)
+    const precip = Array(160).fill().map(() => ({
+      x: Math.random() * 2000,
+      y: Math.random() * 1200,
+      len: 12 + Math.random() * 15,
+      speedY: 8 + Math.random() * 6,
+      speedX: -2.0,
+      size: 1.5 + Math.random() * 2.5,
+      drift: Math.random() * Math.PI * 2
+    }));
+
+    // Lightning state for Storm mode
+    let lightningFlash = 0;
+    let lightningBolt = null;
+
+    // Primary Rocket Launch + Booster Landing State Machine
+    let rocketState = {
+      phase: 'PAD', // 'PAD', 'COUNTDOWN', 'LAUNCHING', 'BOOSTER_RETURN'
+      timer: 0,
+      altitude: 0,
+      velocity: 0,
+      boosterY: 360,
+      sonicBoomPlayed: false,
+      plumeParticles: [],
+      weldSparks: []
+    };
+
+    window.triggerRocketLaunch = function() {
+      if (rocketState.phase === 'PAD') {
+        rocketState.phase = 'COUNTDOWN';
+        rocketState.timer = 100;
+        rocketState.sonicBoomPlayed = false;
+        window.playCountdownBeep(false);
+      }
+    };
+
+    document.getElementById('launch-rocket-btn').addEventListener('click', () => {
+      window.triggerRocketLaunch();
+    });
+
+    // Autonomous Drones & VTOL Shuttle Fleet
+    const drones = Array(9).fill().map((_, i) => ({
+      id: i,
+      x: Math.random() * 1400,
+      y: 130 + Math.random() * 240,
+      targetX: 150 + Math.random() * 1100,
+      targetY: 110 + Math.random() * 240,
+      type: i % 4 === 0 ? 'inspector' : i % 4 === 1 ? 'cargo' : i % 4 === 2 ? 'vtol' : 'patrol',
+      color: i % 2 === 0 ? '#38bdf8' : '#a855f7'
+    }));
+
+    // REGISTERED PEOPLE / CREW AVATARS IN THE AEROBAY SPACEPORT HUB
+    const CREW_TASKS = [
+      'Going to Aerobay Office HQ',
+      'Inspecting Aerobay Pad-01',
+      'Coding Flight Telemetry',
+      'Calibrating Drone Fleet',
+      'Reviewing Cryo Fuel Array',
+      'Syncing Daily Work Update',
+      'Operating Deep-Space Dish',
+      'Working in Aerobay VAB Bay',
+      'Testing Reusable Booster',
+      'Monitoring Orbital Link'
+    ];
+
+    let hubPeople = [];
+
+    function readCachedRoster() {
+      try {
+        const raw = localStorage.getItem('aerobay_registered_roster_v1');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (_) {}
+      return null;
+    }
+
+    function saveCachedRoster(list) {
+      try {
+        localStorage.setItem('aerobay_registered_roster_v1', JSON.stringify(list));
+      } catch (_) {}
+    }
+
+    function suitColorForUser(u) {
+      if (u.role === 'admin') return { suit: '#f59e0b', trim: '#fef08a', badge: 'ADMIN' };
+      if (u.role === 'executive') return { suit: '#a855f7', trim: '#e9d5ff', badge: 'EXEC' };
+      if ((u.level || 0) >= 4) return { suit: '#0ea5e9', trim: '#bae6fd', badge: `L${u.level}` };
+      if ((u.level || 0) >= 2) return { suit: '#10b981', trim: '#a7f3d0', badge: `L${u.level}` };
+      if ((u.level || 0) === 1) return { suit: '#38bdf8', trim: '#e0f2fe', badge: 'L1' };
+      return { suit: '#fb923c', trim: '#fed7aa', badge: 'PENDING' };
+    }
+
+    window.syncHubRoster = function(profilesList) {
+      const clean = Array.isArray(profilesList) && profilesList.length > 0
+        ? profilesList.map(p => ({
+            id: p.id || String(Math.random()),
+            name: p.name || (p.email ? p.email.split('@')[0] : 'Aerobay Member'),
+            role: p.role || 'user',
+            level: typeof p.level === 'number' ? p.level : 1
+          }))
+        : (readCachedRoster() || [
+            { id: 'cmd-1', name: 'Aerobay Director', role: 'admin', level: 7 },
+            { id: 'eng-2', name: 'Telemetry Lead', role: 'user', level: 5 },
+            { id: 'eng-3', name: 'Pad Systems Tech', role: 'user', level: 3 },
+            { id: 'eng-4', name: 'Avionics Specialist', role: 'user', level: 2 },
+            { id: 'eng-5', name: 'Propulsion Engineer', role: 'user', level: 1 },
+            { id: 'eng-6', name: 'Drone Ops Lead', role: 'user', level: 4 }
+          ]);
+
+      if (Array.isArray(profilesList) && profilesList.length > 0) {
+        saveCachedRoster(clean);
+      }
+
+      if (crewCountNum) {
+        crewCountNum.innerText = String(clean.length);
+      }
+
+      const existingMap = new Map(hubPeople.map(p => [p.id, p]));
+      hubPeople = clean.map((u, idx) => {
+        const prev = existingMap.get(u.id);
+        const palette = suitColorForUser(u);
+        const task = CREW_TASKS[idx % CREW_TASKS.length];
+        if (prev) {
+          prev.name = u.name;
+          prev.role = u.role;
+          prev.level = u.level;
+          prev.palette = palette;
+          return prev;
+        }
+        const normX = 0.06 + ((idx * 0.14 + Math.random() * 0.07) % 0.88);
+        const targetNormX = 0.06 + Math.random() * 0.88;
+        return {
+          id: u.id,
+          name: u.name,
+          role: u.role,
+          level: u.level,
+          palette,
+          task,
+          normX,
+          targetNormX,
+          speed: 0.00024 + Math.random() * 0.00035,
+          pauseTimer: Math.floor(Math.random() * 180),
+          walkCycle: Math.random() * Math.PI * 2,
+          facing: targetNormX >= normX ? 1 : -1,
+          jumpOffset: 0,
+          waveTimer: 0,
+          stationType: idx % 3 === 0 ? 'desk' : idx % 3 === 1 ? 'welder' : 'holo'
+        };
+      });
+    };
+
+    window.syncHubRoster(null);
 
     function drawCloud(x, y, size, opacity, color) {
+      ctx.save();
       ctx.fillStyle = color;
       ctx.globalAlpha = opacity;
       ctx.beginPath();
       ctx.arc(x, y, size, 0, Math.PI * 2);
-      ctx.arc(x + size*0.8, y - size*0.3, size*0.8, 0, Math.PI * 2);
-      ctx.arc(x + size*1.5, y, size*0.9, 0, Math.PI * 2);
+      ctx.arc(x + size * 0.78, y - size * 0.25, size * 0.78, 0, Math.PI * 2);
+      ctx.arc(x + size * 1.48, y + size * 0.04, size * 0.85, 0, Math.PI * 2);
+      ctx.arc(x - size * 0.65, y + size * 0.12, size * 0.68, 0, Math.PI * 2);
       ctx.fill();
-      ctx.globalAlpha = 1.0;
+      ctx.restore();
     }
 
-    function drawSilhouette() {
-      ctx.fillStyle = '#020617';
+    function drawAurora(isNightOrDusk) {
+      if (window.weatherMode !== 'aurora' && !(isNightOrDusk && window.skyTime < 4.5)) return;
+      const intensity = window.weatherMode === 'aurora' ? 0.52 : 0.2;
+      const nowMs = Date.now() * 0.001;
+      ctx.save();
+      for (let band = 0; band < 3; band++) {
+        const grad = ctx.createLinearGradient(0, height * 0.04, width, height * 0.48);
+        if (band === 0) {
+          grad.addColorStop(0, `rgba(16, 185, 129, 0)`);
+          grad.addColorStop(0.3, `rgba(16, 185, 129, ${intensity})`);
+          grad.addColorStop(0.7, `rgba(56, 189, 248, ${intensity * 0.9})`);
+          grad.addColorStop(1, `rgba(139, 92, 246, 0)`);
+        } else if (band === 1) {
+          grad.addColorStop(0, `rgba(139, 92, 246, 0)`);
+          grad.addColorStop(0.4, `rgba(168, 85, 247, ${intensity * 0.75})`);
+          grad.addColorStop(0.8, `rgba(16, 185, 129, ${intensity * 0.6})`);
+          grad.addColorStop(1, `rgba(16, 185, 129, 0)`);
+        } else {
+          grad.addColorStop(0, `rgba(56, 189, 248, 0)`);
+          grad.addColorStop(0.5, `rgba(45, 212, 191, ${intensity * 0.6})`);
+          grad.addColorStop(1, `rgba(56, 189, 248, 0)`);
+        }
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        const baseY = height * (0.13 + band * 0.07);
+        ctx.moveTo(0, baseY);
+        for (let x = 0; x <= width; x += 36) {
+          const wave = Math.sin(x * 0.004 + nowMs * (0.8 + band * 0.3) + band) * 28 +
+                       Math.cos(x * 0.009 - nowMs * 0.5) * 14;
+          ctx.lineTo(x, baseY + wave);
+        }
+        ctx.lineTo(width, baseY + 100);
+        ctx.lineTo(0, baseY + 100);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // Orbiting Aerobay Space Station in the upper sky
+    function drawOrbitalStation(isDay) {
+      const nowSec = Date.now() * 0.001;
+      const satX = ((nowSec * 22) % (width + 240)) - 120;
+      const satY = 62 + Math.sin(nowSec * 0.4) * 18;
+
+      ctx.save();
+      ctx.translate(satX, satY);
+      ctx.rotate(-0.08);
+
+      // Solar Array Wings
+      ctx.fillStyle = isDay ? '#0284c7' : '#38bdf8';
+      ctx.strokeStyle = '#e0f2fe';
+      ctx.lineWidth = 1;
+      ctx.fillRect(-36, -6, 23, 12);
+      ctx.strokeRect(-36, -6, 23, 12);
+      ctx.fillRect(13, -6, 23, 12);
+      ctx.strokeRect(13, -6, 23, 12);
+
+      // Central Truss & Core Module
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(-9, -3.5, 18, 7);
+      ctx.fillStyle = '#10b981';
       ctx.beginPath();
-      ctx.moveTo(0, height);
-      ctx.lineTo(0, height - 80);
-      ctx.quadraticCurveTo(width * 0.2, height - 150, width * 0.5, height - 90);
-      ctx.quadraticCurveTo(width * 0.8, height - 40, width, height - 120);
-      ctx.lineTo(width, height);
+      ctx.arc(0, 0, 2.2, 0, Math.PI * 2);
       ctx.fill();
-      const personX = width * 0.35;
-      const personY = height - 110;
+
+      // Label next to satellite
+      ctx.font = '800 8px "JetBrains Mono", monospace';
+      ctx.fillStyle = isDay ? 'rgba(15, 23, 42, 0.72)' : 'rgba(186, 230, 253, 0.88)';
+      ctx.fillText('AEROBAY-ISS 01', -32, -11);
+      ctx.restore();
+    }
+
+    function drawAerobaySpaceport(isDay, isNight, sunAngle) {
+      const groundY = height - 68;
+      const horizonY = height - 124;
+      const nowSec = Date.now() * 0.001;
+
+      // 1. DISTANT LAYERED MOUNTAINS & COASTAL BAY WATER
+      ctx.fillStyle = isDay ? '#1e3a5f' : '#050d1e';
       ctx.beginPath();
-      ctx.arc(personX, personY - 15, 4, 0, Math.PI*2);
+      ctx.moveTo(0, horizonY);
+      ctx.lineTo(width * 0.12, horizonY - 48);
+      ctx.lineTo(width * 0.27, horizonY - 19);
+      ctx.lineTo(width * 0.48, horizonY - 64);
+      ctx.lineTo(width * 0.68, horizonY - 24);
+      ctx.lineTo(width * 0.86, horizonY - 54);
+      ctx.lineTo(width, horizonY - 22);
+      ctx.lineTo(width, horizonY);
+      ctx.closePath();
       ctx.fill();
-      ctx.fillRect(personX - 2, personY - 10, 4, 15);
-      ctx.fillRect(personX - 5, personY - 10, 10, 3);
+
+      // Coastal Spaceport Water Bay with Shimmer & Building Reflections
+      const waterGrad = ctx.createLinearGradient(0, horizonY, 0, groundY);
+      if (isDay) {
+        waterGrad.addColorStop(0, '#0284c7');
+        waterGrad.addColorStop(1, '#0369a1');
+      } else {
+        waterGrad.addColorStop(0, '#07142e');
+        waterGrad.addColorStop(1, '#020617');
+      }
+      ctx.fillStyle = waterGrad;
+      ctx.fillRect(0, horizonY, width, groundY - horizonY);
+
+      // Shimmering water reflection lines
+      ctx.strokeStyle = isDay ? 'rgba(224, 242, 254, 0.42)' : 'rgba(56, 189, 248, 0.28)';
+      ctx.lineWidth = 1.2;
+      for (let i = 0; i < 24; i++) {
+        const wy = horizonY + 5 + (i * 2.2);
+        const wx = ((i * 89 + Math.sin(nowSec * 2 + i) * 20) % width);
+        ctx.beginPath();
+        ctx.moveTo(wx, wy);
+        ctx.lineTo(wx + 32 + (i % 4) * 15, wy);
+        ctx.stroke();
+      }
+
+      // 2. ELEVATED AEROBAY MAGLEV SKYBRIDGE & MONORAIL POD (CONNECTING VAB TO MCC)
+      const bridgeY = groundY - 44;
+      ctx.strokeStyle = isDay ? 'rgba(148, 163, 184, 0.78)' : 'rgba(56, 189, 248, 0.4)';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(width * 0.28, bridgeY);
+      ctx.lineTo(width * 0.87, bridgeY);
+      ctx.stroke();
+      // Support Pillars
+      for (let px = width * 0.34; px < width * 0.85; px += width * 0.09) {
+        ctx.fillStyle = isDay ? '#64748b' : '#1e293b';
+        ctx.fillRect(px - 2.5, bridgeY, 5, groundY - bridgeY);
+      }
+      // Gliding Maglev Pod
+      const spanW = width * 0.52;
+      const podX = width * 0.31 + ((Math.sin(nowSec * 0.45) + 1) * 0.5) * spanW;
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(podX - 18, bridgeY - 8, 36, 7, 3.5) : ctx.rect(podX - 18, bridgeY - 8, 36, 7);
+      ctx.fill();
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(podX - 12, bridgeY - 7, 24, 3);
+
+      // 3. CRYO PROPELLANT TANK FARM & FLARE STACK (FAR LEFT: ~5% WIDTH)
+      const tankBaseX = width * 0.05;
+      ctx.strokeStyle = isDay ? '#64748b' : '#475569';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(tankBaseX, groundY - 8);
+      ctx.lineTo(width * 0.14, groundY - 8);
+      ctx.stroke();
+      [0, 28].forEach((offset, i) => {
+        const tx = tankBaseX + offset;
+        const ty = groundY - 22;
+        ctx.strokeStyle = isDay ? '#475569' : '#64748b';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(tx - 8, groundY); ctx.lineTo(tx - 5, ty);
+        ctx.moveTo(tx + 8, groundY); ctx.lineTo(tx + 5, ty);
+        ctx.stroke();
+        ctx.fillStyle = isDay ? '#f1f5f9' : '#cbd5e1';
+        ctx.beginPath();
+        ctx.arc(tx, ty, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#0ea5e9';
+        ctx.font = '800 6px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(i === 0 ? 'LOX' : 'CH4', tx, ty + 2);
+      });
+
+      // 4. AEROBAY LAUNCH PAD-01 (LEFT SIDE: ~14% WIDTH)
+      const padX = width * 0.14;
+      const padBaseY = groundY;
+
+      // Night Xenon Searchlights illuminating Launch Pad-01
+      if (!isDay) {
+        ctx.save();
+        const beam1 = ctx.createLinearGradient(padX - 55, padBaseY, padX + 12, padBaseY - 170);
+        beam1.addColorStop(0, 'rgba(186, 230, 253, 0.25)');
+        beam1.addColorStop(1, 'rgba(56, 189, 248, 0)');
+        ctx.fillStyle = beam1;
+        ctx.beginPath();
+        ctx.moveTo(padX - 52, padBaseY - 12);
+        ctx.lineTo(padX - 5, padBaseY - 185);
+        ctx.lineTo(padX + 28, padBaseY - 185);
+        ctx.closePath();
+        ctx.fill();
+
+        const beam2 = ctx.createLinearGradient(padX + 68, padBaseY, padX + 12, padBaseY - 170);
+        beam2.addColorStop(0, 'rgba(186, 230, 253, 0.22)');
+        beam2.addColorStop(1, 'rgba(56, 189, 248, 0)');
+        ctx.fillStyle = beam2;
+        ctx.beginPath();
+        ctx.moveTo(padX + 64, padBaseY - 12);
+        ctx.lineTo(padX - 2, padBaseY - 185);
+        ctx.lineTo(padX + 26, padBaseY - 185);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Concrete Flame Trench & Pad Slope
+      ctx.fillStyle = isDay ? '#475569' : '#1e293b';
+      ctx.beginPath();
+      ctx.moveTo(padX - 65, padBaseY);
+      ctx.lineTo(padX - 45, padBaseY - 16);
+      ctx.lineTo(padX + 55, padBaseY - 16);
+      ctx.lineTo(padX + 75, padBaseY);
+      ctx.closePath();
+      ctx.fill();
+
+      // Fixed Service Structure (Lattice Launch Tower)
+      const towerX = padX - 34;
+      const towerH = 175;
+      const towerW = 22;
+      ctx.strokeStyle = isDay ? '#334155' : '#64748b';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(towerX, padBaseY - 16 - towerH, towerW, towerH);
+
+      // Cross-bracing on Launch Tower
+      ctx.lineWidth = 1.2;
+      for (let y = padBaseY - 16; y > padBaseY - 16 - towerH; y -= 18) {
+        ctx.beginPath();
+        ctx.moveTo(towerX, y);
+        ctx.lineTo(towerX + towerW, y - 18);
+        ctx.moveTo(towerX + towerW, y);
+        ctx.lineTo(towerX, y - 18);
+        ctx.stroke();
+      }
+
+      // Lightning Mast atop Tower
+      ctx.beginPath();
+      ctx.moveTo(towerX + towerW / 2, padBaseY - 16 - towerH);
+      ctx.lineTo(towerX + towerW / 2, padBaseY - 16 - towerH - 28);
+      ctx.stroke();
+
+      // Blinking Red Aviation Beacon on Tower
+      const beaconAlpha = (Math.sin(nowSec * 5) + 1) * 0.5;
+      ctx.fillStyle = `rgba(239, 68, 68, ${0.4 + beaconAlpha * 0.6})`;
+      ctx.beginPath();
+      ctx.arc(towerX + towerW / 2, padBaseY - 16 - towerH - 28, 3.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Crew Access Swing Arm (retracts during launch!)
+      const armRetract = rocketState.phase === 'LAUNCHING' ? Math.min(1, rocketState.altitude / 40) : 0;
+      ctx.strokeStyle = isDay ? '#475569' : '#94a3b8';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(towerX + towerW, padBaseY - 135);
+      ctx.lineTo(towerX + towerW + 28 * (1 - armRetract * 0.75), padBaseY - 135 - armRetract * 16);
+      ctx.stroke();
+
+      // Update Rocket + Booster Landing State Machine + Synchronized Acoustics
+      if (rocketState.phase === 'PAD') {
+        rocketState.timer++;
+        if (rocketState.timer > 4200) {
+          window.triggerRocketLaunch();
+        }
+        if (Math.random() < 0.38) {
+          rocketState.plumeParticles.push({
+            x: padX + 12 + (Math.random() - 0.5) * 6,
+            y: padBaseY - 95 - Math.random() * 40,
+            vx: 0.6 + Math.random() * 0.8,
+            vy: -0.3 - Math.random() * 0.4,
+            r: 4 + Math.random() * 6,
+            alpha: 0.45,
+            color: '226, 232, 240'
+          });
+        }
+      } else if (rocketState.phase === 'COUNTDOWN') {
+        rocketState.timer--;
+        if (rocketState.timer === 66 || rocketState.timer === 33) {
+          window.playCountdownBeep(false);
+        } else if (rocketState.timer === 1) {
+          window.playCountdownBeep(true);
+          window.playLaunchSound();
+        }
+        // Water Deluge & Pre-Ignition Steam Plumes
+        for (let i = 0; i < 5; i++) {
+          rocketState.plumeParticles.push({
+            x: padX + 12 + (Math.random() - 0.5) * 22,
+            y: padBaseY - 18,
+            vx: (Math.random() - 0.5) * 3.8,
+            vy: -0.5 - Math.random() * 1.8,
+            r: 8 + Math.random() * 13,
+            alpha: 0.82,
+            color: i % 2 === 0 ? '251, 146, 60' : '241, 245, 249'
+          });
+        }
+        if (rocketState.timer <= 0) {
+          rocketState.phase = 'LAUNCHING';
+          rocketState.velocity = 0.42;
+        }
+      } else if (rocketState.phase === 'LAUNCHING') {
+        rocketState.velocity = Math.min(9.8, rocketState.velocity + 0.068);
+        rocketState.altitude += rocketState.velocity;
+        for (let i = 0; i < 6; i++) {
+          rocketState.plumeParticles.push({
+            x: padX + 12 + (Math.random() - 0.5) * 12,
+            y: padBaseY - 18 - rocketState.altitude,
+            vx: (Math.random() - 0.5) * 2.6,
+            vy: 1.8 + Math.random() * 2.8,
+            r: 7 + Math.random() * 15,
+            alpha: 0.88,
+            color: i === 0 ? '254, 240, 138' : i === 1 ? '249, 115, 22' : '226, 232, 240'
+          });
+        }
+        if (rocketState.altitude > height + 220) {
+          rocketState.phase = 'BOOSTER_RETURN';
+          rocketState.boosterY = -120;
+        }
+      } else if (rocketState.phase === 'BOOSTER_RETURN') {
+        if (!rocketState.sonicBoomPlayed && rocketState.boosterY > 40) {
+          rocketState.sonicBoomPlayed = true;
+          window.playBoosterSonicBoom();
+        }
+        const targetY = padBaseY - 12;
+        rocketState.boosterY += (targetY - rocketState.boosterY) * 0.036 + 1.2;
+        if (rocketState.boosterY >= targetY - 1) {
+          rocketState.phase = 'PAD';
+          rocketState.altitude = 0;
+          rocketState.velocity = 0;
+          rocketState.timer = 0;
+        }
+      }
+
+      // Draw Orbital Heavy-Lift Rocket on Pad-01
+      const rX = padX + 12;
+      const rBaseY = padBaseY - 16 - rocketState.altitude;
+
+      if (rocketState.phase === 'COUNTDOWN' || rocketState.phase === 'LAUNCHING') {
+        const flameGrad = ctx.createLinearGradient(rX, rBaseY, rX, rBaseY + 64);
+        flameGrad.addColorStop(0, '#ffffff');
+        flameGrad.addColorStop(0.3, '#fde047');
+        flameGrad.addColorStop(0.7, '#f97316');
+        flameGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+        ctx.fillStyle = flameGrad;
+        ctx.beginPath();
+        ctx.moveTo(rX - 9, rBaseY);
+        ctx.lineTo(rX + 9, rBaseY);
+        ctx.lineTo(rX + (Math.random() - 0.5) * 6, rBaseY + 46 + Math.random() * 20);
+        ctx.closePath();
+        ctx.fill();
+
+        // Mach Shock Diamonds inside Exhaust Plume
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+        for (let sd = 1; sd <= 3; sd++) {
+          ctx.beginPath();
+          ctx.ellipse(rX, rBaseY + sd * 11, 3.2 - sd * 0.6, 5, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Side Solid Rocket Boosters
+      ctx.fillStyle = isDay ? '#e2e8f0' : '#cbd5e1';
+      ctx.fillRect(rX - 15, rBaseY - 88, 6, 84);
+      ctx.fillRect(rX + 9, rBaseY - 88, 6, 84);
+      ctx.beginPath();
+      ctx.moveTo(rX - 15, rBaseY - 88); ctx.lineTo(rX - 12, rBaseY - 98); ctx.lineTo(rX - 9, rBaseY - 88);
+      ctx.moveTo(rX + 9, rBaseY - 88); ctx.lineTo(rX + 12, rBaseY - 98); ctx.lineTo(rX + 15, rBaseY - 88);
+      ctx.fill();
+
+      // Core Rocket Body
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(rX - 8, rBaseY - 138, 16, 134);
+      // Black Interstage & Aerobay Stripes
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(rX - 8, rBaseY - 92, 16, 12);
+      ctx.fillStyle = '#0ea5e9';
+      ctx.fillRect(rX - 8, rBaseY - 122, 16, 5);
+      // Vertical "AEROBAY" text on rocket core
+      ctx.save();
+      ctx.fillStyle = '#0284c7';
+      ctx.font = '900 6px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('AB-1', rX, rBaseY - 52);
+      ctx.restore();
+      // Payload Fairing / Nosecone
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.moveTo(rX - 9, rBaseY - 138);
+      ctx.quadraticCurveTo(rX, rBaseY - 172, rX + 9, rBaseY - 138);
+      ctx.closePath();
+      ctx.fill();
+      // Engine Nozzles
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(rX - 6, rBaseY - 4, 4, 4);
+      ctx.fillRect(rX + 2, rBaseY - 4, 4, 4);
+
+      // Transonic Max-Q Vapor Cone around Rocket Fairing during Ascent!
+      if (rocketState.phase === 'LAUNCHING' && rocketState.altitude > 110 && rocketState.altitude < 360) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(241, 245, 249, 0.55)';
+        ctx.beginPath();
+        ctx.moveTo(rX, rBaseY - 142);
+        ctx.lineTo(rX - 26, rBaseY - 115);
+        ctx.lineTo(rX + 26, rBaseY - 115);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 5. LANDING ZONE LZ-01 (REUSABLE BOOSTER PAD AT ~22% WIDTH)
+      const lzX = width * 0.225;
+      ctx.fillStyle = isDay ? '#334155' : '#1e293b';
+      ctx.fillRect(lzX - 24, groundY - 6, 48, 6);
+      // Illuminated LZ-01 Pad Beacon Lights
+      ctx.fillStyle = '#10b981';
+      ctx.fillRect(lzX - 20, groundY - 7, 5, 2);
+      ctx.fillRect(lzX + 15, groundY - 7, 5, 2);
+
+      const bY = rocketState.phase === 'BOOSTER_RETURN' ? rocketState.boosterY : groundY - 6;
+      // Reusable First-Stage Booster with Grid Fins & Landing Legs
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(lzX - 5, bY - 64, 10, 56);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(lzX - 5, bY - 64, 10, 7);
+      // Grid fins
+      ctx.fillRect(lzX - 9, bY - 58, 4, 3);
+      ctx.fillRect(lzX + 5, bY - 58, 4, 3);
+      // Deployed Carbon Landing Legs
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(lzX - 5, bY - 14); ctx.lineTo(lzX - 13, bY);
+      ctx.moveTo(lzX + 5, bY - 14); ctx.lineTo(lzX + 13, bY);
+      ctx.stroke();
+      if (rocketState.phase === 'BOOSTER_RETURN') {
+        ctx.fillStyle = '#f97316';
+        ctx.beginPath();
+        ctx.moveTo(lzX - 4, bY - 8);
+        ctx.lineTo(lzX + 4, bY - 8);
+        ctx.lineTo(lzX, bY + 20 + Math.random() * 10);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Update & Draw Plume / Cryo Particles
+      for (let i = rocketState.plumeParticles.length - 1; i >= 0; i--) {
+        const p = rocketState.plumeParticles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.r += 0.25;
+        p.alpha -= 0.012;
+        if (p.alpha <= 0) {
+          rocketState.plumeParticles.splice(i, 1);
+          continue;
+        }
+        ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 6. AEROBAY VEHICLE ASSEMBLY BUILDING (VAB - LEFT-CENTER: ~28% WIDTH)
+      const vabX = width * 0.28;
+      const vabW = Math.max(120, Math.min(170, width * 0.135));
+      const vabH = 152;
+      const vabY = groundY - vabH;
+
+      // Main VAB Structure
+      ctx.fillStyle = isDay ? '#cbd5e1' : '#1e293b';
+      ctx.fillRect(vabX, vabY, vabW, vabH);
+      ctx.strokeStyle = isDay ? '#64748b' : '#38bdf8';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(vabX, vabY, vabW, vabH);
+
+      // Rooftop Neon Sign on VAB: "AEROBAY VAB"
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(vabX + vabW / 2 - 40, vabY - 14, 80, 14);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.strokeRect(vabX + vabW / 2 - 40, vabY - 14, 80, 14);
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '900 8px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('AEROBAY VAB', vabX + vabW / 2, vabY - 4);
+
+      // High-Bay Vertical Doors
+      ctx.fillStyle = isDay ? '#334155' : '#0f172a';
+      ctx.fillRect(vabX + 12, vabY + 26, 28, vabH - 26);
+      ctx.fillRect(vabX + vabW - 40, vabY + 26, 28, vabH - 26);
+
+      // Inside Right Bay Door: Overhead Gantry Crane & Welding Sparks
+      const craneY = vabY + 46 + Math.sin(nowSec * 1.2) * 14;
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(vabX + vabW - 38, craneY);
+      ctx.lineTo(vabX + vabW - 14, craneY);
+      ctx.stroke();
+
+      // Horizontal Bay Door Ribs on Left Door
+      ctx.strokeStyle = isDay ? '#94a3b8' : '#334155';
+      ctx.lineWidth = 1;
+      for (let ry = vabY + 38; ry < groundY; ry += 14) {
+        ctx.beginPath();
+        ctx.moveTo(vabX + 12, ry); ctx.lineTo(vabX + 40, ry);
+        ctx.stroke();
+      }
+
+      // Central AEROBAY Emblem & Illuminated Bay Windows
+      ctx.fillStyle = '#0ea5e9';
+      ctx.beginPath();
+      ctx.arc(vabX + vabW / 2, vabY + 45, 17, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 7.5px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('AEROBAY', vabX + vabW / 2, vabY + 48);
+
+      // Glowing Interior Work Bays
+      const winColor = isDay ? 'rgba(56, 189, 248, 0.35)' : 'rgba(253, 224, 71, 0.78)';
+      for (let wy = vabY + 72; wy < groundY - 16; wy += 16) {
+        ctx.fillStyle = winColor;
+        ctx.fillRect(vabX + vabW / 2 - 14, wy, 28, 9);
+      }
+
+      // 7. AEROBAY MISSION CONTROL CENTER (MCC - RIGHT-CENTER: ~62% WIDTH)
+      const mccX = width * 0.62;
+      const mccW = Math.max(140, Math.min(200, width * 0.165));
+      const mccH = 116;
+      const mccY = groundY - mccH;
+
+      // Main Glass & Steel Mission Control Building
+      ctx.fillStyle = isDay ? '#94a3b8' : '#0f172a';
+      ctx.fillRect(mccX, mccY, mccW, mccH);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(mccX, mccY, mccW, mccH);
+
+      // Rooftop Neon Sign: "AEROBAY HQ"
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(mccX + mccW / 2 - 38, mccY - 14, 76, 14);
+      ctx.strokeStyle = '#a855f7';
+      ctx.strokeRect(mccX + mccW / 2 - 38, mccY - 14, 76, 14);
+      ctx.fillStyle = '#e9d5ff';
+      ctx.font = '900 8px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('AEROBAY HQ', mccX + mccW / 2, mccY - 4);
+
+      // Illuminated Ribbon Windows (4 Floors of Telemetry Screens & Silhouette Desks)
+      for (let floor = 0; floor < 4; floor++) {
+        const fy = mccY + 16 + floor * 22;
+        ctx.fillStyle = isDay ? 'rgba(14, 165, 233, 0.45)' : 'rgba(56, 189, 248, 0.68)';
+        ctx.fillRect(mccX + 10, fy, mccW - 20, 14);
+        ctx.fillStyle = isNight ? '#fde047' : '#e0f2fe';
+        for (let sx = mccX + 16; sx < mccX + mccW - 24; sx += 22) {
+          ctx.fillRect(sx, fy + 3, 12, 7);
+          ctx.fillStyle = '#0f172a';
+          ctx.beginPath();
+          ctx.arc(sx + 6, fy + 8, 2.2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = isNight ? '#fde047' : '#e0f2fe';
+        }
+      }
+
+      // Glowing Ground Entrance Revolving Doors on Aerobay HQ
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.85)';
+      ctx.fillRect(mccX + mccW / 2 - 14, groundY - 14, 28, 14);
+
+      // Rooftop Rotating Deep-Space Radar Dish on MCC
+      const dishX = mccX + mccW * 0.22;
+      const dishY = mccY;
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(dishX, dishY);
+      ctx.lineTo(dishX - 8, dishY - 18);
+      ctx.lineTo(dishX + 8, dishY - 18);
+      ctx.closePath();
+      ctx.stroke();
+
+      const dishAngle = Math.sin(nowSec * 0.7) * 0.45 - 0.5;
+      ctx.save();
+      ctx.translate(dishX, dishY - 20);
+      ctx.rotate(dishAngle);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, 16, Math.PI * 0.15, Math.PI * 0.85);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, 16);
+      ctx.lineTo(0, 4);
+      ctx.stroke();
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(0, 3, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Rooftop Communications Tower on MCC
+      const antX = mccX + mccW * 0.82;
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(antX, mccY);
+      ctx.lineTo(antX, mccY - 34);
+      ctx.stroke();
+      const pulseR = (nowSec * 22) % 36;
+      ctx.strokeStyle = `rgba(56, 189, 248, ${1 - pulseR / 36})`;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(antX, mccY - 34, pulseR, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // 8. GEODESIC DRONE LAB, BIODOME & SOLAR ARRAY FARM (FAR RIGHT: ~86% WIDTH)
+      const domeX = width * 0.86;
+      const domeR = 48;
+      ctx.fillStyle = isDay ? 'rgba(224, 242, 254, 0.55)' : 'rgba(30, 58, 138, 0.55)';
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.arc(domeX, groundY, domeR, Math.PI, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(domeX, groundY, domeR * 0.68, Math.PI, 0);
+      ctx.moveTo(domeX - domeR, groundY); ctx.lineTo(domeX + domeR, groundY);
+      ctx.moveTo(domeX, groundY); ctx.lineTo(domeX, groundY - domeR);
+      ctx.moveTo(domeX, groundY); ctx.lineTo(domeX - domeR * 0.7, groundY - domeR * 0.7);
+      ctx.moveTo(domeX, groundY); ctx.lineTo(domeX + domeR * 0.7, groundY - domeR * 0.7);
+      ctx.stroke();
+
+      // Sun-Tracking Solar Panels next to Biodome
+      const panelTilt = isDay ? Math.max(-0.45, Math.min(0.45, Math.cos(sunAngle) * 0.4)) : 0;
+      [width * 0.935, width * 0.965].forEach(sx => {
+        ctx.strokeStyle = '#64748b';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(sx, groundY);
+        ctx.lineTo(sx, groundY - 16);
+        ctx.stroke();
+        ctx.save();
+        ctx.translate(sx, groundY - 16);
+        ctx.rotate(panelTilt);
+        ctx.fillStyle = '#0284c7';
+        ctx.strokeStyle = '#bae6fd';
+        ctx.lineWidth = 1;
+        ctx.fillRect(-11, -3, 22, 5);
+        ctx.strokeRect(-11, -3, 22, 5);
+        ctx.restore();
+      });
+
+      // 9. SPACEPORT TARMAC, ELECTRIC ROVER & PLAZA WALKWAY
+      ctx.fillStyle = isDay ? '#1e293b' : '#090d16';
+      ctx.fillRect(0, groundY, width, height - groundY);
+
+      // Glowing Cyan Plaza Walkway Strip
+      ctx.fillStyle = isDay ? '#334155' : '#0f172a';
+      ctx.fillRect(0, groundY + 4, width, 24);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.55)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, groundY + 4);
+      ctx.lineTo(width, groundY + 4);
+      ctx.stroke();
+
+      // Runway / Walkway Guide Lights
+      for (let lx = 20; lx < width; lx += 50) {
+        const blink = ((Math.floor(nowSec * 3 + lx) % 4) === 0) ? 1 : 0.45;
+        ctx.fillStyle = `rgba(56, 189, 248, ${blink})`;
+        ctx.beginPath();
+        ctx.arc(lx, groundY + 7, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Autonomous Aerobay Ground Rover / Crew Transport Shuttle on Tarmac
+      const roverX = ((nowSec * 34) % (width + 120)) - 60;
+      const roverY = groundY + 2;
+      ctx.save();
+      ctx.translate(roverX, roverY);
+      if (!isDay) {
+        const hGrad = ctx.createLinearGradient(12, -5, 65, 2);
+        hGrad.addColorStop(0, 'rgba(254, 240, 138, 0.45)');
+        hGrad.addColorStop(1, 'rgba(254, 240, 138, 0)');
+        ctx.fillStyle = hGrad;
+        ctx.beginPath();
+        ctx.moveTo(12, -6); ctx.lineTo(65, -14); ctx.lineTo(65, 4); ctx.closePath();
+        ctx.fill();
+      }
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(-12, -10, 24, 8, 3) : ctx.rect(-12, -10, 24, 8);
+      ctx.fill();
+      ctx.fillStyle = '#0ea5e9';
+      ctx.fillRect(-8, -9, 16, 4);
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(-7, -1, 3, 0, Math.PI * 2);
+      ctx.arc(7, -1, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawDrones(isDay) {
+      const nowSec = Date.now() * 0.001;
+      const padX = width * 0.14 + 12;
+      const groundY = height - 68;
+
+      drones.forEach((d, idx) => {
+        if (d.type === 'inspector' && rocketState.phase === 'PAD') {
+          d.targetX = padX + 42 + Math.sin(nowSec * 1.2 + idx) * 18;
+          d.targetY = groundY - 95 + Math.cos(nowSec * 0.9 + idx) * 45;
+        } else {
+          const dx = d.targetX - d.x;
+          const dy = d.targetY - d.y;
+          if (Math.hypot(dx, dy) < 25) {
+            d.targetX = width * (0.08 + Math.random() * 0.84);
+            d.targetY = 85 + Math.random() * (height * 0.44);
+          }
+        }
+
+        d.x += (d.targetX - d.x) * 0.018;
+        d.y += (d.targetY - d.y) * 0.018;
+        const bobY = d.y + Math.sin(nowSec * 4 + d.id) * 4;
+
+        ctx.save();
+        ctx.translate(d.x, bobY);
+
+        if (d.type === 'inspector' && rocketState.phase === 'PAD') {
+          const scanGrad = ctx.createLinearGradient(0, 0, -40, 20);
+          scanGrad.addColorStop(0, 'rgba(56, 189, 248, 0.55)');
+          scanGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+          ctx.fillStyle = scanGrad;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(-46, 12);
+          ctx.lineTo(-46, 32);
+          ctx.closePath();
+          ctx.fill();
+        } else if (!isDay && d.type === 'patrol') {
+          const beamGrad = ctx.createLinearGradient(0, 0, 0, 95);
+          beamGrad.addColorStop(0, 'rgba(56, 189, 248, 0.32)');
+          beamGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+          ctx.fillStyle = beamGrad;
+          ctx.beginPath();
+          ctx.moveTo(0, 4);
+          ctx.lineTo(-26, 95);
+          ctx.lineTo(26, 95);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // Quadcopter / VTOL Arms & Rotors
+        ctx.strokeStyle = isDay ? '#1e293b' : '#cbd5e1';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(-14, -2); ctx.lineTo(14, -2);
+        ctx.moveTo(-10, -2); ctx.lineTo(-10, -6);
+        ctx.moveTo(10, -2); ctx.lineTo(10, -6);
+        ctx.stroke();
+
+        const rotorW = 6 + Math.sin(nowSec * 40 + d.id) * 3;
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(-10 - rotorW, -6); ctx.lineTo(-10 + rotorW, -6);
+        ctx.moveTo(10 - rotorW, -6); ctx.lineTo(10 + rotorW, -6);
+        ctx.stroke();
+
+        // Drone Fuselage Pod
+        ctx.fillStyle = d.type === 'vtol' ? '#f8fafc' : '#0f172a';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, d.type === 'vtol' ? 11 : 8, 4.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = d.color;
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        if (d.type === 'cargo') {
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(-4, 5, 8, 6);
+        }
+
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath(); ctx.arc(-13, -2, 1.8, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#10b981';
+        ctx.beginPath(); ctx.arc(13, -2, 1.8, 0, Math.PI * 2); ctx.fill();
+
+        ctx.restore();
+      });
+    }
+
+    // Draw every registered user as an animated person doing tasks in the Aerobay Hub
+    function drawRegisteredPeople() {
+      const groundY = height - 54;
+      const nowSec = Date.now() * 0.001;
+      let hoveredPerson = null;
+
+      if (selectedCrewTimer > 0) {
+        selectedCrewTimer--;
+        if (selectedCrewTimer === 0) selectedCrewId = null;
+      }
+
+      hubPeople.forEach((p, idx) => {
+        if (p.jumpOffset > 0) p.jumpOffset = Math.max(0, p.jumpOffset - 0.8);
+        if (p.waveTimer > 0) p.waveTimer--;
+
+        if (p.pauseTimer > 0) {
+          p.pauseTimer--;
+        } else {
+          const diff = p.targetNormX - p.normX;
+          if (Math.abs(diff) < 0.005) {
+            p.pauseTimer = 120 + Math.floor(Math.random() * 190);
+            p.targetNormX = 0.06 + Math.random() * 0.88;
+            p.facing = p.targetNormX >= p.normX ? 1 : -1;
+            p.task = CREW_TASKS[Math.floor(Math.random() * CREW_TASKS.length)];
+          } else {
+            p.normX += Math.sign(diff) * p.speed;
+            p.facing = Math.sign(diff);
+            p.walkCycle += 0.18;
+          }
+        }
+
+        const px = p.normX * width;
+        const py = groundY + (idx % 3) * 4 - p.jumpOffset;
+        const isWalking = p.pauseTimer === 0;
+        const legSwing = isWalking ? Math.sin(p.walkCycle) * 4.5 : 0;
+        const armSwing = isWalking ? -Math.sin(p.walkCycle) * 4 : (Math.sin(nowSec * 5 + idx) * 1.5);
+
+        ctx.save();
+        ctx.translate(px, py);
+
+        // Ground shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.38)';
+        ctx.beginPath();
+        ctx.ellipse(0, 1 + p.jumpOffset, 6, 2.2, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Legs
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 2.2;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-1.5, -7); ctx.lineTo(-1.5 - legSwing, 0);
+        ctx.moveTo(1.5, -7); ctx.lineTo(1.5 + legSwing, 0);
+        ctx.stroke();
+
+        // Torso / Spaceport Suit
+        ctx.fillStyle = p.palette.suit;
+        ctx.beginPath();
+        ctx.roundRect ? ctx.roundRect(-4, -16, 8, 10, 2) : ctx.rect(-4, -16, 8, 10);
+        ctx.fill();
+
+        // Suit Stripe
+        ctx.fillStyle = p.palette.trim;
+        ctx.fillRect(-4, -12, 8, 2);
+
+        // Head / Helmet
+        ctx.fillStyle = '#f8fafc';
+        ctx.beginPath();
+        ctx.arc(0, -20, 4.2, 0, Math.PI * 2);
+        ctx.fill();
+        // Visor
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(p.facing > 0 ? 0 : -3.5, -21.5, 3.5, 2.5);
+
+        // Arms & Task Props
+        ctx.strokeStyle = p.palette.suit;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, -14);
+        if (p.waveTimer > 0) {
+          ctx.lineTo(p.facing * 6, -24 + Math.sin(nowSec * 20) * 3);
+        } else {
+          ctx.lineTo(p.facing * 5 + armSwing * 0.5, -9);
+        }
+        ctx.stroke();
+
+        if (isWalking) {
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(p.facing * 4, -9, 5, 4);
+        } else {
+          if (p.stationType === 'desk') {
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(p.facing * 6, -11, 8, 11);
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillRect(p.facing * 7, -15, 6, 4);
+          } else if (p.stationType === 'welder') {
+            ctx.fillStyle = '#fde047';
+            ctx.beginPath();
+            ctx.arc(p.facing * 6, -11, 1.8 + Math.random() * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.85)';
+            ctx.fillRect(p.facing * 5, -15, 5, 4);
+            ctx.strokeStyle = 'rgba(125, 211, 252, 0.45)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(p.facing * 7.5, -15);
+            ctx.lineTo(p.facing * 7.5, -22);
+            ctx.stroke();
+          }
+        }
+
+        const dist = Math.hypot(mouseX - px, mouseY - (py - 12));
+        if (dist < 30 || p.id === selectedCrewId) {
+          hoveredPerson = { p, px, py };
+        }
+
+        const showMiniTag = hubPeople.length <= 12 || ((Math.floor(nowSec * 0.5) + idx) % Math.ceil(hubPeople.length / 6) === 0);
+        if (showMiniTag && (!hoveredPerson || hoveredPerson.p.id !== p.id)) {
+          ctx.font = '800 9px Inter, sans-serif';
+          const label = `${p.name.split(' ')[0]} · ${p.palette.badge}`;
+          const tw = ctx.measureText(label).width + 10;
+          ctx.fillStyle = 'rgba(2, 6, 23, 0.82)';
+          ctx.strokeStyle = p.palette.suit;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.roundRect ? ctx.roundRect(-tw / 2, -37, tw, 13, 6) : ctx.rect(-tw / 2, -37, tw, 13);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = '#f8fafc';
+          ctx.textAlign = 'center';
+          ctx.fillText(label, 0, -28);
+        }
+
+        ctx.restore();
+      });
+
+      // Detailed Hover / Touch Tooltip for any Crew Member
+      if (hoveredPerson) {
+        const { p, px, py } = hoveredPerson;
+        ctx.save();
+        ctx.font = '800 11px Inter, sans-serif';
+        const line1 = `${p.name} (${p.palette.badge})`;
+        ctx.font = '600 10px Inter, sans-serif';
+        const line2 = `⚡ ${p.task}`;
+        const w = Math.max(ctx.measureText(line1).width, ctx.measureText(line2).width) + 22;
+        const bx = Math.max(12, Math.min(width - w - 12, px - w / 2));
+        const by = py - 66;
+
+        ctx.fillStyle = 'rgba(2, 6, 23, 0.94)';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect ? ctx.roundRect(bx, by, w, 36, 8) : ctx.rect(bx, by, w, 36);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '800 11px Inter, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(line1, bx + 10, by + 15);
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '600 10px Inter, sans-serif';
+        ctx.fillText(line2, bx + 10, by + 29);
+        ctx.restore();
+      }
+    }
+
+    function drawWeatherOverlay() {
+      const mode = window.weatherMode;
+      if (mode === 'rain' || mode === 'storm') {
+        ctx.save();
+        ctx.strokeStyle = mode === 'storm' ? 'rgba(186, 230, 253, 0.65)' : 'rgba(186, 230, 253, 0.45)';
+        ctx.lineWidth = 1.3;
+        precip.forEach(drop => {
+          drop.y += drop.speedY * (mode === 'storm' ? 1.45 : 1);
+          drop.x += drop.speedX * (mode === 'storm' ? 2.2 : 1);
+          if (drop.y > height) { drop.y = -20; drop.x = Math.random() * width; }
+          if (drop.x < 0) drop.x = width;
+          ctx.beginPath();
+          ctx.moveTo(drop.x, drop.y);
+          ctx.lineTo(drop.x + drop.speedX * 2, drop.y + drop.len);
+          ctx.stroke();
+        });
+        ctx.restore();
+      } else if (mode === 'snow') {
+        ctx.save();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+        precip.forEach(flake => {
+          flake.y += flake.speedY * 0.22;
+          flake.drift += 0.03;
+          flake.x += Math.sin(flake.drift) * 0.8;
+          if (flake.y > height) { flake.y = -10; flake.x = Math.random() * width; }
+          ctx.beginPath();
+          ctx.arc(flake.x % width, flake.y, flake.size, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.restore();
+      }
+
+      if (mode === 'storm') {
+        if (Math.random() < 0.012 && lightningFlash <= 0) {
+          lightningFlash = 1.0;
+          window.playThunderSound();
+          const startX = width * (0.2 + Math.random() * 0.6);
+          const pts = [{ x: startX, y: 0 }];
+          let currX = startX, currY = 0;
+          while (currY < height * 0.72) {
+            currX += (Math.random() - 0.5) * 55;
+            currY += 25 + Math.random() * 35;
+            pts.push({ x: currX, y: currY });
+          }
+          lightningBolt = pts;
+        }
+        if (lightningFlash > 0) {
+          ctx.save();
+          ctx.fillStyle = `rgba(224, 242, 254, ${lightningFlash * 0.35})`;
+          ctx.fillRect(0, 0, width, height);
+          if (lightningBolt) {
+            ctx.strokeStyle = `rgba(255, 255, 255, ${lightningFlash})`;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#38bdf8';
+            ctx.lineWidth = 2.8;
+            ctx.beginPath();
+            lightningBolt.forEach((pt, idx) => idx === 0 ? ctx.moveTo(pt.x, pt.y) : ctx.lineTo(pt.x, pt.y));
+            ctx.stroke();
+          }
+          ctx.restore();
+          lightningFlash -= 0.06;
+        }
+      }
     }
 
     const animateSky = () => {
       const t = window.skyTime;
       const isDay = t > 6 && t < 18;
+      const isNight = t < 5.5 || t > 18.5;
       const angle = ((t - 6) / 12) * Math.PI;
       const centerX = width / 2;
-      const arcRadius = height * 0.7;
+      const arcRadius = Math.min(width, height) * 0.68;
       const sunX = centerX - Math.cos(angle) * arcRadius;
-      const sunY = height - Math.sin(angle) * arcRadius;
+      const sunY = (height - 90) - Math.sin(angle) * arcRadius;
       const moonAngle = angle + Math.PI;
       const moonX = centerX - Math.cos(moonAngle) * arcRadius;
-      const moonY = height - Math.sin(moonAngle) * arcRadius;
+      const moonY = (height - 90) - Math.sin(moonAngle) * arcRadius;
 
       let skyGrad = ctx.createLinearGradient(0, 0, 0, height);
-      if (t < 5 || t > 19) { skyGrad.addColorStop(0, '#020617'); skyGrad.addColorStop(1, '#0f172a'); }
-      else if (t >= 5 && t <= 7) { skyGrad.addColorStop(0, '#312e81'); skyGrad.addColorStop(0.5, '#f43f5e'); skyGrad.addColorStop(1, '#fcd34d'); }
-      else if (t > 7 && t < 17) { skyGrad.addColorStop(0, '#0ea5e9'); skyGrad.addColorStop(1, '#e0f2fe'); }
-      else if (t >= 17 && t <= 19) { skyGrad.addColorStop(0, '#1e1b4b'); skyGrad.addColorStop(0.5, '#c026d3'); skyGrad.addColorStop(1, '#f59e0b'); }
+      if (window.weatherMode === 'storm') {
+        skyGrad.addColorStop(0, '#070b14');
+        skyGrad.addColorStop(0.5, '#1e293b');
+        skyGrad.addColorStop(1, '#334155');
+      } else if (window.weatherMode === 'rain' && isDay) {
+        skyGrad.addColorStop(0, '#334155');
+        skyGrad.addColorStop(0.6, '#64748b');
+        skyGrad.addColorStop(1, '#94a3b8');
+      } else if (t < 5 || t > 19) {
+        skyGrad.addColorStop(0, '#01040d');
+        skyGrad.addColorStop(0.55, '#071024');
+        skyGrad.addColorStop(1, '#0f172a');
+      } else if (t >= 5 && t <= 7) {
+        skyGrad.addColorStop(0, '#1e1b4b');
+        skyGrad.addColorStop(0.45, '#be123c');
+        skyGrad.addColorStop(1, '#fbbf24');
+      } else if (t > 7 && t < 17) {
+        skyGrad.addColorStop(0, '#026aa7');
+        skyGrad.addColorStop(0.55, '#0ea5e9');
+        skyGrad.addColorStop(1, '#bae6fd');
+      } else {
+        skyGrad.addColorStop(0, '#1e1b4b');
+        skyGrad.addColorStop(0.5, '#a21caf');
+        skyGrad.addColorStop(1, '#f59e0b');
+      }
       ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, width, height);
 
+      // Stars, Milky Way Nebula Dust & Shooting Stars
       let starOpacity = 1;
-      if (isDay) starOpacity = 0;
-      else if (t > 4 && t <= 6) starOpacity = 1 - (t - 4)/2;
-      else if (t >= 18 && t < 20) starOpacity = (t - 18)/2;
+      if (isDay && window.weatherMode !== 'aurora') starOpacity = 0;
+      else if (t > 4.5 && t <= 6.2) starOpacity = 1 - (t - 4.5) / 1.7;
+      else if (t >= 17.8 && t < 19.5) starOpacity = (t - 17.8) / 1.7;
 
-      if (starOpacity > 0) {
+      if (starOpacity > 0 && window.weatherMode !== 'storm') {
+        // Subtle Milky Way galactic band at night
+        ctx.save();
+        const mwGrad = ctx.createLinearGradient(0, 0, width, height * 0.65);
+        mwGrad.addColorStop(0, 'rgba(56, 189, 248, 0)');
+        mwGrad.addColorStop(0.5, `rgba(139, 92, 246, ${0.09 * starOpacity})`);
+        mwGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
+        ctx.fillStyle = mwGrad;
+        ctx.fillRect(0, 0, width, height * 0.65);
+        ctx.restore();
+
+        const nowMs = Date.now();
         stars.forEach(s => {
-          s.opacity += Math.sin(Date.now() * s.twinkleSpeed) * 0.05;
-          if(s.opacity < 0.2) s.opacity = 0.2; if(s.opacity > 1) s.opacity = 1;
-          ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity * starOpacity})`;
-          ctx.beginPath(); ctx.arc(s.x % width, s.y % height, s.size, 0, Math.PI*2); ctx.fill();
+          const tw = 0.35 + 0.65 * Math.abs(Math.sin(nowMs * s.twinkleSpeed * 0.05 + s.phase));
+          ctx.fillStyle = s.hue;
+          ctx.globalAlpha = tw * starOpacity;
+          ctx.beginPath();
+          ctx.arc(s.x % width, s.y % (height * 0.75), s.size, 0, Math.PI * 2);
+          ctx.fill();
         });
+        ctx.globalAlpha = 1;
+
+        if (!shootingStar && Math.random() < 0.006) {
+          shootingStar = { x: Math.random() * width * 0.8, y: 30 + Math.random() * 140, vx: 9, vy: 3.5, alpha: 1 };
+        }
+        if (shootingStar) {
+          ctx.strokeStyle = `rgba(224, 242, 254, ${shootingStar.alpha})`;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(shootingStar.x, shootingStar.y);
+          ctx.lineTo(shootingStar.x - 38, shootingStar.y - 15);
+          ctx.stroke();
+          shootingStar.x += shootingStar.vx;
+          shootingStar.y += shootingStar.vy;
+          shootingStar.alpha -= 0.03;
+          if (shootingStar.alpha <= 0) shootingStar = null;
+        }
       }
 
-      if (sunY < height + 100) {
-        ctx.shadowBlur = 100; ctx.shadowColor = '#fde047';
+      drawAurora(!isDay);
+      drawOrbitalStation(isDay);
+
+      // Photorealistic Sun with Atmospheric Corona & Subtle Optical Lens Flare
+      if (sunY < height - 50 && window.weatherMode !== 'storm') {
+        ctx.save();
+        const corona = ctx.createRadialGradient(sunX, sunY, 10, sunX, sunY, 115);
+        corona.addColorStop(0, 'rgba(255, 251, 235, 1)');
+        corona.addColorStop(0.3, 'rgba(253, 224, 71, 0.55)');
+        corona.addColorStop(1, 'rgba(253, 224, 71, 0)');
+        ctx.fillStyle = corona;
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, 115, 0, Math.PI * 2);
+        ctx.fill();
+
         ctx.fillStyle = '#fffbeb';
-        ctx.beginPath(); ctx.arc(sunX, sunY, 40, 0, Math.PI*2); ctx.fill();
-        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.arc(sunX, sunY, 32, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       }
 
-      if (moonY < height + 100) {
-        ctx.shadowBlur = 30; ctx.shadowColor = '#cbd5e1';
+      // Detailed Cratered Moon with Earthshine
+      if (moonY < height - 50) {
+        ctx.save();
+        ctx.shadowBlur = 35;
+        ctx.shadowColor = '#bae6fd';
         ctx.fillStyle = '#f8fafc';
-        ctx.beginPath(); ctx.arc(moonX, moonY, 30, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#0f172a';
-        ctx.beginPath(); ctx.arc(moonX + 10, moonY - 10, 25, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, 27, 0, Math.PI * 2);
+        ctx.fill();
+        // Lunar Mare Craters
         ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.35)';
+        ctx.beginPath();
+        ctx.arc(moonX - 8, moonY - 6, 6, 0, Math.PI * 2);
+        ctx.arc(moonX + 9, moonY + 5, 4.5, 0, Math.PI * 2);
+        ctx.arc(moonX - 3, moonY + 10, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       }
 
-      let cloudOpacity = isDay ? 0.9 : 0.15;
-      let cloudColor = (t >= 5 && t <= 7) || (t >= 17 && t <= 19) ? '#ffedd5' : '#ffffff';
+      let cloudOpacity = window.weatherMode === 'storm' ? 0.85 : window.weatherMode === 'rain' ? 0.78 : isDay ? 0.75 : 0.16;
+      let cloudColor = window.weatherMode === 'storm'
+        ? '#1e293b'
+        : window.weatherMode === 'rain'
+        ? '#64748b'
+        : ((t >= 5 && t <= 7) || (t >= 17 && t <= 19) ? '#fed7aa' : '#ffffff');
       clouds.forEach(c => {
-        c.x += c.speed;
-        if (c.x > width + 150) c.x = -150;
+        c.x += c.speed * (window.weatherMode === 'storm' ? 2.4 : 1);
+        if (c.x > width + 160) c.x = -160;
         drawCloud(c.x, c.y, c.size, cloudOpacity, cloudColor);
       });
 
-      drawSilhouette();
+      drawAerobaySpaceport(isDay, isNight, angle);
+      drawDrones(isDay);
+      drawRegisteredPeople();
+      drawWeatherOverlay();
+
       requestAnimationFrame(animateSky);
     };
     animateSky();
@@ -530,23 +2962,64 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
       throw new Error(errors.join(' | ') || 'No AI provider enabled');
     }
 
+    /* High-Contrast Aerobay Mission Patch Vector Logo (never blends into bright skies) */
     const VectorLogo = ({ size = 100 }) => (
-      <svg className="logo-svg" viewBox="-20 -20 140 140" width={size} height={size} xmlns="http://www.w3.org/2000/svg">
+      <svg className="logo-svg" viewBox="-24 -24 148 148" width={size} height={size} xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="crestCore" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#0f172a" stopOpacity="0.96" />
+            <stop offset="75%" stopColor="#020617" stopOpacity="0.94" />
+            <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.35" />
+          </radialGradient>
+        </defs>
+        <circle cx="50" cy="50" r="68" fill="url(#crestCore)" stroke="rgba(56, 189, 248, 0.45)" strokeWidth="2" />
+        <circle cx="24" cy="30" r="1.3" fill="#bae6fd" />
+        <circle cx="78" cy="26" r="1.5" fill="#e0f2fe" />
+        <circle cx="20" cy="68" r="1.2" fill="#a78bfa" />
+        <circle cx="80" cy="70" r="1.4" fill="#38bdf8" />
         <g className="logo-ring">
-          <circle cx="50" cy="50" r="65" fill="none" stroke="#38bdf8" strokeWidth="4" strokeLinecap="round" strokeDasharray="350 60" strokeDashoffset="20" />
+          <circle cx="50" cy="50" r="65" fill="none" stroke="#38bdf8" strokeWidth="4.5" strokeLinecap="round" strokeDasharray="320 55" strokeDashoffset="20" />
+        </g>
+        <g className="logo-ring-rev">
+          <circle cx="50" cy="50" r="55" fill="none" stroke="#a78bfa" strokeWidth="1.8" strokeLinecap="round" strokeDasharray="60 40 120 40" />
         </g>
         <g className="logo-rocket">
-          <polygon points="50,22 25,58 50,48" fill="#38bdf8" stroke="#38bdf8" strokeWidth="4" strokeLinejoin="round" />
-          <polygon points="50,22 75,58 50,48" fill="#8b5cf6" stroke="#8b5cf6" strokeWidth="4" strokeLinejoin="round" />
-          <polygon points="50,22 37,42 63,42" fill="#1e40af" stroke="#1e40af" strokeWidth="3" strokeLinejoin="round" />
+          <polygon points="50,18 22,58 50,47" fill="#38bdf8" stroke="#e0f2fe" strokeWidth="2.5" strokeLinejoin="round" />
+          <polygon points="50,18 78,58 50,47" fill="#8b5cf6" stroke="#ddd6fe" strokeWidth="2.5" strokeLinejoin="round" />
+          <polygon points="50,18 36,41 64,41" fill="#1e40af" stroke="#7dd3fc" strokeWidth="2" strokeLinejoin="round" />
           <g className="logo-exhaust">
-            <line x1="40" y1="63" x2="40" y2="85" stroke="#38bdf8" strokeWidth="5" strokeLinecap="round" />
-            <line x1="50" y1="53" x2="50" y2="92" stroke="#38bdf8" strokeWidth="5" strokeLinecap="round" />
-            <line x1="60" y1="63" x2="60" y2="85" stroke="#38bdf8" strokeWidth="5" strokeLinecap="round" />
+            <line x1="39" y1="62" x2="39" y2="85" stroke="#38bdf8" strokeWidth="5" strokeLinecap="round" />
+            <line x1="50" y1="53" x2="50" y2="92" stroke="#fde047" strokeWidth="5.5" strokeLinecap="round" />
+            <line x1="61" y1="62" x2="61" y2="85" stroke="#38bdf8" strokeWidth="5" strokeLinecap="round" />
           </g>
         </g>
       </svg>
     );
+
+    function TelemetryBar({ crewCount }) {
+      const [utcNow, setUtcNow] = useState('');
+      useEffect(() => {
+        const tick = () => {
+          const d = new Date();
+          setUtcNow(d.toISOString().slice(11, 19) + ' UTC');
+        };
+        tick();
+        const id = setInterval(tick, 1000);
+        return () => clearInterval(id);
+      }, []);
+
+      return (
+        <div className="telemetry-strip">
+          <div className="telemetry-group">
+            <span className="telemetry-tag"><span className="live-dot"></span> PAD-01 TELEMETRY NOMINAL</span>
+            <span className="telemetry-tag">📡 {utcNow}</span>
+          </div>
+          <div className="telemetry-group">
+            <span className="telemetry-tag">👨‍🚀 {crewCount} ACTIVE IN HUB</span>
+          </div>
+        </div>
+      );
+    }
 
     function App() {
       /* ---------- core state ---------- */
@@ -561,6 +3034,7 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
       const [loading, setLoading] = useState(false);
       const [activePage, setActivePage] = useState('feed');
       const [toasts, setToasts] = useState([]);
+      const [dialog, setDialog] = useState(null);
 
       /* ---------- auth forms ---------- */
       const [authMode, setAuthMode] = useState('login');
@@ -586,15 +3060,22 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
       const [newDeptName, setNewDeptName] = useState('');
 
       const addToast = (msg, type = 'success') => {
+        if (type === 'error' && window.playErrorSound) window.playErrorSound();
         const id = Date.now() + Math.random();
         setToasts(prev => [...prev, { id, msg, type }]);
         setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
       };
 
       /* =====================================================
-         AUTH BOOTSTRAP
+         AUTH BOOTSTRAP & REGISTERED CREW SYNC
          ===================================================== */
       useEffect(() => {
+        supabase.from('profiles').select('id, name, email, role, level').then(({ data }) => {
+          if (data && data.length > 0 && window.syncHubRoster) {
+            window.syncHubRoster(data);
+          }
+        }).catch(() => {});
+
         supabase.auth.getSession().then(({ data: { session } }) => { setAuthUser(session?.user ?? null); setBooting(false); });
         const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
           if (event === 'PASSWORD_RECOVERY') setRecoveryMode(true);
@@ -607,7 +3088,7 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
       const loadProfile = useCallback(async () => {
         if (!authUser) { setProfile(null); return; }
         let { data } = await supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle();
-        if (!data) {   // safety net if the DB trigger didn't fire
+        if (!data) {
           const name = authUser.user_metadata?.full_name || authUser.user_metadata?.name || authUser.email.split('@')[0];
           const { data: created } = await supabase.from('profiles').insert([{ id: authUser.id, email: authUser.email, name }]).select().single();
           data = created;
@@ -616,7 +3097,6 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
       }, [authUser]);
       useEffect(() => { loadProfile(); }, [loadProfile]);
 
-      // pending users poll every 30s so they get in as soon as a manager activates them
       useEffect(() => {
         if (profile && !isActive(profile)) { const t = setInterval(loadProfile, 30000); return () => clearInterval(t); }
       }, [profile, loadProfile]);
@@ -633,16 +3113,27 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
             supabase.from('departments').select('*').order('name'),
             supabase.from('profiles').select('*').order('level', { ascending: false }),
             supabase.from('entries').select('*').order('work_date', { ascending: false }).order('created_at', { ascending: false }).limit(500),
-            supabase.from('entries').select('owner_id').eq('work_date', compDate)   // daily compliance check
+            supabase.from('entries').select('owner_id').eq('work_date', compDate)
           ]);
           const err = d.error || p.error || e.error || c.error; if (err) throw err;
-          setDepartments(d.data || []); setProfiles(p.data || []); setEntries(e.data || []);
+          setDepartments(d.data || []);
+          setProfiles(p.data || []);
+          setEntries(e.data || []);
           setComplianceIds(new Set((c.data || []).map(x => x.owner_id)));
+          if (p.data && p.data.length > 0 && window.syncHubRoster) {
+            window.syncHubRoster(p.data);
+          }
         } catch (err) { addToast(err.message || 'Database connection error.', 'error'); }
         finally { setLoading(false); }
       }, [profile?.id, profile?.level, profile?.role, profile?.disabled, profile?.department_id]);
 
       useEffect(() => { fetchData(); const t = setInterval(fetchData, 60 * 60 * 1000); return () => clearInterval(t); }, [fetchData]);
+
+      useEffect(() => {
+        if (profile && (!profiles || profiles.length === 0) && window.syncHubRoster) {
+          window.syncHubRoster([profile]);
+        }
+      }, [profile, profiles]);
 
       /* =====================================================
          DERIVED
@@ -746,7 +3237,9 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
         setAiBusy(true);
         try {
           const { text: out, provider } = await summarizeWithAI(text);
-          setAiApplied(true); setAiProvider(provider); addToast(`✨ Summarised by ${provider}`);
+          setAiApplied(true); setAiProvider(provider);
+          if (window.playAiCompleteSound) window.playAiCompleteSound();
+          addToast(`✨ Summarised by ${provider}`);
           return out;
         } catch (err) {
           setAiApplied(true); setAiProvider('local');
@@ -767,8 +3260,9 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
         if (error) return addToast(error.message, 'error');
         setPostText(''); setAiApplied(false); setActivePage('feed'); fetchData();
         window.playUploadSound();
+        if (window.triggerRocketLaunch) window.triggerRocketLaunch();
         confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#38bdf8', '#8b5cf6', '#10b981', '#f59e0b'] });
-        addToast('Update published! Great job.');
+        addToast('Update published! Aerobay Rocket launched!');
       };
 
       /* =====================================================
@@ -790,7 +3284,6 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
         const byDept = {}; rows.forEach(e => { const k = deptName(e.department_id); (byDept[k] = byDept[k] || []).push(e); });
         Object.entries(byDept).forEach(([k, list]) => XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(list.map(toRow)), safeName(k)));
 
-        // Missing-log sheet: every Mon–Fri in the month (up to today) with no entry, per visible user
         const scopeUsers = visibleProfiles.filter(p => p.role === 'user' && isActive(p) && inDeptScope(p.department_id));
         const logged = new Set(rows.map(e => e.owner_id + '|' + e.work_date));
         const missingRows = []; const today = fmtDate(new Date());
@@ -800,6 +3293,7 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
         }
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(missingRows.length ? missingRows : [{ Status: 'No missing logs' }]), 'Missing Logs');
         XLSX.writeFile(wb, `Aerobay_${deptFilter === 'ALL' ? 'AllDepts' : safeName(deptName(deptFilter))}_${downloadMonth}.xlsx`);
+        if (window.playUploadSound) window.playUploadSound();
         addToast('Excel downloaded successfully!');
       };
 
@@ -851,15 +3345,46 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
         if (error) return addToast(error.message, 'error');
         setNewDeptName(''); fetchData(); addToast('Department added');
       };
-      const renameDept = async (d) => {
-        const name = prompt('Rename department:', d.name); if (!name || name.trim() === d.name) return;
-        const { error } = await supabase.from('departments').update({ name: name.trim() }).eq('id', d.id);
-        if (error) return addToast(error.message, 'error'); fetchData(); addToast('Renamed');
+      const renameDept = (d) => {
+        setDialog({
+          type: 'prompt',
+          title: 'Rename Department',
+          message: `Enter a new name for "${d.name}":`,
+          value: d.name,
+          onConfirm: async (val) => {
+            setDialog(null);
+            if (!val || val.trim() === d.name) return;
+            const { error } = await supabase.from('departments').update({ name: val.trim() }).eq('id', d.id);
+            if (error) return addToast(error.message, 'error');
+            fetchData(); addToast('Renamed');
+          }
+        });
       };
-      const deleteDept = async (d) => {
-        if (!confirm(`Delete "${d.name}"? Members will become unassigned.`)) return;
-        const { error } = await supabase.from('departments').delete().eq('id', d.id);
-        if (error) return addToast(error.message, 'error'); fetchData(); addToast('Department removed');
+      const deleteDept = (d) => {
+        setDialog({
+          type: 'confirm',
+          title: 'Delete Department',
+          message: `Delete "${d.name}"? Members will become unassigned.`,
+          onConfirm: async () => {
+            setDialog(null);
+            const { error } = await supabase.from('departments').delete().eq('id', d.id);
+            if (error) return addToast(error.message, 'error');
+            fetchData(); addToast('Department removed');
+          }
+        });
+      };
+      const confirmDeleteEntry = (entryId) => {
+        setDialog({
+          type: 'confirm',
+          title: 'Remove Entry',
+          message: 'Are you sure you want to remove this work update entry?',
+          onConfirm: async () => {
+            setDialog(null);
+            const { error } = await supabase.from('entries').delete().eq('id', entryId);
+            if (error) return addToast(error.message, 'error');
+            fetchData(); addToast('Post removed.');
+          }
+        });
       };
 
       /* =====================================================
@@ -870,15 +3395,48 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
           {toasts.map(t => <div key={t.id} className={`toast ${t.type}`}>{t.type === 'error' ? '⚠️' : '✅'} {t.msg}</div>)}
         </div>
       );
+
+      const DialogModal = () => {
+        if (!dialog) return null;
+        return (
+          <div className="modal-backdrop" onClick={() => setDialog(null)}>
+            <div className="modal-card" onClick={e => e.stopPropagation()}>
+              <h3 style={{ fontSize: 17, fontWeight: 800, marginBottom: 8 }}>{dialog.title}</h3>
+              <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 14 }}>{dialog.message}</div>
+              {dialog.type === 'prompt' && (
+                <input
+                  autoFocus
+                  value={dialog.value}
+                  onChange={e => setDialog({ ...dialog, value: e.target.value })}
+                  onKeyDown={e => e.key === 'Enter' && dialog.onConfirm(dialog.value)}
+                />
+              )}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 18 }}>
+                <button className="btn-small" onClick={() => setDialog(null)}>Cancel</button>
+                <button className="btn-small danger" onClick={() => dialog.onConfirm(dialog.value)}>Confirm</button>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
       const BigBrand = () => (
-        <div className="brand-header"><VectorLogo size={130} /><div className="brand-title">AEROBAY</div><div className="brand-subtitle">Work update</div></div>
+        <div className="brand-header">
+          <div className="brand-crest-shell">
+            <VectorLogo size={110} />
+            <div className="brand-title">AEROBAY</div>
+            <div className="brand-subtitle">
+              <span className="live-dot"></span> Aerobay Spaceport · Work Update Portal
+            </div>
+          </div>
+        </div>
       );
 
-      if (booting) return <div><Toasts /><div style={{ marginTop: '5vh' }}><BigBrand /><div className="panel" style={{ textAlign: 'center', fontWeight: 800 }}>Connecting…</div></div></div>;
+      if (booting) return <div><Toasts /><div style={{ marginTop: '3vh' }}><BigBrand /><div className="panel" style={{ textAlign: 'center', fontWeight: 800 }}>Connecting to Aerobay Mission Control…</div></div></div>;
 
       /* ---- password recovery ---- */
       if (recoveryMode) return (
-        <div><Toasts /><div style={{ marginTop: '5vh' }}><BigBrand />
+        <div><Toasts /><div style={{ marginTop: '3vh' }}><BigBrand />
           <div className="panel">
             <h2 style={{ fontSize: 18, marginBottom: 6 }}>Set a new password</h2>
             <div className="field-label">New Password</div>
@@ -890,7 +3448,8 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
       /* ---- logged out ---- */
       if (!authUser) return (
         <div><Toasts />
-          <div style={{ marginTop: '5vh' }}>
+          <TelemetryBar crewCount={profiles.length || 6} />
+          <div style={{ marginTop: '1vh' }}>
             <BigBrand />
             <div className="panel">
               <div className="tabs">
@@ -914,7 +3473,7 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
                   <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" />
                   <div className="field-label">Password</div>
                   <input type="password" value={pw} onChange={e => setPw(e.target.value)} placeholder="Magical world" />
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 10, fontWeight: 600 }}>Your account starts as <b>Pending</b>. An Admin or your Manager will assign your department and level.</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 10, fontWeight: 600 }}>Your account starts as <b>Pending</b>. Once registered, your character joins the Aerobay Spaceport Hub!</div>
                   <button className="btn-primary" onClick={handleSignup}>Register Account</button>
                 </div>
               )}
@@ -928,12 +3487,12 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
         </div>
       );
 
-      if (!profile) return <div><Toasts /><div style={{ marginTop: '5vh' }}><BigBrand /><div className="panel" style={{ textAlign: 'center', fontWeight: 800 }}>Loading profile…</div></div></div>;
+      if (!profile) return <div><Toasts /><div style={{ marginTop: '3vh' }}><BigBrand /><div className="panel" style={{ textAlign: 'center', fontWeight: 800 }}>Loading profile…</div></div></div>;
 
       /* ---- pending / disabled holding screen (Level 0: no data visible) ---- */
       if (!isActive(profile)) return (
         <div><Toasts />
-          <div style={{ marginTop: '5vh' }}>
+          <div style={{ marginTop: '3vh' }}>
             <BigBrand />
             <div className="panel" style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 44, marginBottom: 10 }}>{profile.disabled ? '⛔' : '⏳'}</div>
@@ -956,8 +3515,18 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
       return (
         <div>
           <Toasts />
-          <div className="brand-header" style={{ marginBottom: 24, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: '15px' }}>
-            <VectorLogo size={55} /><div className="brand-title" style={{ fontSize: 28, marginTop: 0 }}>AEROBAY</div>
+          <DialogModal />
+          <TelemetryBar crewCount={profiles.length || 1} />
+          <div className="brand-header" style={{ marginBottom: 18 }}>
+            <div className="brand-compact-bar">
+              <VectorLogo size={54} />
+              <div style={{ textAlign: 'left' }}>
+                <div className="brand-title" style={{ fontSize: 26, marginTop: 0, letterSpacing: '5px' }}>AEROBAY</div>
+                <div style={{ fontSize: 10, color: '#bae6fd', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase' }}>
+                  <span className="live-dot" style={{ marginRight: 5 }}></span>Aerobay Hub · {profiles.length || 1} Registered Crew Active
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="session-bar">
@@ -990,9 +3559,9 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
               <h2 style={{ fontSize: 18, marginBottom: 20 }}>Submit Daily Report</h2>
               <div className="field-label" style={{ marginTop: 0 }}>Work Date</div>
               <input type="date" value={selectedDate} max={fmtDate(new Date())} onChange={e => setSelectedDate(e.target.value)} />
-              <div className="field-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <div className="field-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 8 }}>
                 <span>Task Details</span>
-                <span style={{ display: 'flex', gap: 8 }}>
+                <span style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <button onClick={previewAI} className="btn-mic" disabled={aiBusy || !postText.trim()} title="Convert to bullet points now">{aiBusy ? '✨ Working…' : '✨ AI Bullets'}</button>
                   <button onClick={toggleMic} className={`btn-mic ${isListening ? 'listening' : ''}`} title="Click to dictate">{isListening ? '🔴 Recording...' : '🎙️ Dictate'}</button>
                 </span>
@@ -1054,7 +3623,7 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
               )}
 
               <div className="panel">
-                <h2 style={{ fontSize: 18, marginBottom: 14 }}>User Directory</h2>
+                <h2 style={{ fontSize: 18, marginBottom: 14 }}>User Directory ({profiles.length} in Aerobay Spaceport Hub)</h2>
                 <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, email, department or role…" />
                 <div className="tabs" style={{ marginTop: 14, marginBottom: 0 }}>
                   <div className={'tab ' + (!pendingOnly ? 'active' : '')} onClick={() => setPendingOnly(false)}>All Visible ({profiles.length})</div>
@@ -1117,8 +3686,8 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
                   : <div>{missingUsers.map(p => <span className="chip" key={p.id}>⚠ {p.id === profile.id ? 'You' : p.name}<span style={{ opacity: .75, fontWeight: 600 }}>· {deptName(p.department_id)} · L{p.level}</span></span>)}</div>}
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-main)', textTransform: 'uppercase', letterSpacing: '1px', textShadow: '0 1px 4px rgba(0,0,0,0.35)' }}>
                   {isExec(profile) ? 'Global Activity Feed' : profile.level >= 2 ? `${deptName(profile.department_id)} · L1–L${profile.level - 1} + You` : 'My Activity'}
                 </div>
                 {isExec(profile) && (
@@ -1131,7 +3700,7 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
               {loading ? (
                 <div><div className="skeleton"></div><div className="skeleton"></div></div>
               ) : feedEntries.length === 0 ? (
-                <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40, fontWeight: 'bold' }}>No activity recorded yet.</div>
+                <div className="panel" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 36, fontWeight: 'bold' }}>No activity recorded yet.</div>
               ) : feedGroups.map(([deptId, list]) => (
                 <div key={deptId}>
                   <div className="dept-heading">🏷 {deptName(deptId)} <span style={{ opacity: .6 }}>· {list.length}</span></div>
@@ -1148,7 +3717,7 @@ Keep every fact, number, part name and person name exactly as given. Do not inve
                       <div className="entry-text">{e.text}</div>
                       {(admin || profile.id === e.owner_id) && (
                         <div style={{ marginTop: 16, textAlign: 'right' }}>
-                          <button className="del-btn" onClick={async () => { if (!confirm('Remove this entry?')) return; const { error } = await supabase.from('entries').delete().eq('id', e.id); if (error) return addToast(error.message, 'error'); fetchData(); addToast('Post removed.'); }}>Remove Entry</button>
+                          <button className="del-btn" onClick={() => confirmDeleteEntry(e.id)}>Remove Entry</button>
                         </div>
                       )}
                     </div>
